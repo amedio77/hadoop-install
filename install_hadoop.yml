@@ -36,8 +36,8 @@
     - name: create symbolic link
       file: src=/opt/hadoop-3.2.1 dest=/opt/hadoop state=link
 
-    - name: .bashrc
-      copy: src=.bashrc dest=/home/centos
+#    - name: .bashrc
+#      copy: src=.bashrc dest=/home/centos
 
     - name: hadoop conf core-site
       template: src=core-site.xml dest=/opt/hadoop/etc/hadoop
