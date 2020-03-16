@@ -1,0 +1,64 @@
+---
+- name: Install java
+  hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Install open jdk
+      command: "sudo yum install -y java-1.8.0-openjdk-devel.x86_64"
+      become: yes
+
+    - name: install wget 
+      yum: name=wget state=present
+
+    - name: install openjdk 1.8.0
+      yum: name=java-1.8.0-openjdk state=present
+
+    - name: check if hadoop is already downloaded 
+      command: /usr/bin/test -e /home/centos/hadoop-3.2.1.tar.gz
+      ignore_errors: True
+      register: hadoop_exists
+
+    - name: download hadoop 3.2.1
+      get_url:
+         url=http://apache.claz.org/hadoop/common/hadoop-3.2.1/hadoop-3.2.1.tar.gz dest=/home/centos 
+      when: hadoop_exists.rc != 0
+ 
+    - name: check hadoop directory existence
+      stat: path=/opt/hadoop-3.2.1
+      register: hadoop_dir  
+
+    - name: extract hadoop
+      unarchive: src=/home/centos/hadoop-3.2.1.tar.gz dest=/opt copy=no
+      when: not hadoop_dir.stat.exists
+
+    - name: create symbolic link
+      file: src=/opt/hadoop-3.2.1 dest=/opt/hadoop state=link
+
+    - name: .bashrc
+      copy: src=.bashrc dest=/home/centos
+
+    - name: hadoop conf core-site
+      template: src=core-site.xml dest=/opt/hadoop/etc/hadoop
+
+    - name: hadoop conf hdfs-site
+      template: src=hdfs-site.xml dest=/opt/hadoop/etc/hadoop
+
+    - name: hadoop conf mapred-site
+      template: src=mapred-site.xml dest=/opt/hadoop/etc/hadoop
+
+    - name: hadoop conf yarn-site
+      template: src=yarn-site.xml dest=/opt/hadoop/etc/hadoop
+
+    - name: hadoop conf hadoop-env
+      template: src=hadoop-env.sh dest=/opt/hadoop/etc/hadoop
+
+    - name: hadoop conf yarn-env
+      template: src=yarn-env.sh dest=/opt/hadoop/etc/hadoop
+
+#    - name: hadoop service config
+#      copy: src=hadoop dest=/etc/init.d/hadoop mode=0777
+
+
+
