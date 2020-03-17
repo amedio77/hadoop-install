@@ -20,6 +20,18 @@
     - name: install openjdk 1.8.0
       yum: name=java-1.8.0-openjdk state=present
 
+    - name: Insert a line at the end of a file.
+      lineinfile:
+        path: ~/.bashrc
+#        line: export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+        line: export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-0.el7_7.x86_64
+      become: no
+
+    - name: source ~/.bashrc
+      command: source ~/.bashrc
+      become: no
+
+
     - name: check if hadoop is already downloaded 
       command: /usr/bin/test -e /home/centos/hadoop-3.2.1.tar.gz
       ignore_errors: True
