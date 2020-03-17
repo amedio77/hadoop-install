@@ -11,6 +11,11 @@
 
     - name: install wget 
       yum: name=wget state=present
+      
+    - name: Install git
+      yum: 
+        name: git
+        state: present      
 
     - name: install openjdk 1.8.0
       yum: name=java-1.8.0-openjdk state=present
