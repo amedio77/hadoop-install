@@ -23,6 +23,17 @@
         hworker-1
         hworker-2
   
+  - name: add known_hosts
+    command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }} 
+    register: keyscan 
+
+  - lineinfile:
+      name=~/.ssh/known_hosts
+      create=yes
+      line={{ item }} 
+    with_items:
+      - "{{ keyscan.stdout_lines }}"
+  
   - name: ssh-keygen ansible-server
     connection: local                 
     command: "ssh-keygen -b 2048 -t rsa -f /home/centos/.ssh/id_rsa -q -N ''"
@@ -41,13 +52,4 @@
       line: "{{ id_pub.stdout }}"
 
   
-  - name: add known_hosts
-    command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }} 
-    register: keyscan 
 
-  - lineinfile:
-      name=~/.ssh/known_hosts
-      create=yes
-      line={{ item }} 
-    with_items:
-      - "{{ keyscan.stdout_lines }}"
