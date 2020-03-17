@@ -5,6 +5,23 @@
   gather_facts: no
  
   tasks:
+  - name: Add "/etc/hosts"
+  blockinfile: 
+    path: /etc/hosts
+    block: |
+      10.0.0.11 hmaster
+      10.0.0.5 hworker-1
+      10.0.0.12 hworker-2
+  
+  - name: Add "/etc/ansible/hosts"
+    blockinfile: 
+      path: /etc/ansible/hosts
+      block: |
+        [masters]
+        hmaster    
+        [workers]
+        hworker-1
+        hworker-2
   
   - name: ssh-keygen ansible-server
     connection: local                 
