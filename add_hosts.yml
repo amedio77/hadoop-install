@@ -11,9 +11,9 @@
     blockinfile: 
       path: /etc/hosts
       block: |
-        10.0.0.5 hmaster
+        10.0.0.3 hmaster
         10.0.0.7 hworker-1
-        10.0.0.3 hworker-2
+        10.0.0.5 hworker-2
     become: yes    
   
   - name: Add "/etc/ansible/hosts"
@@ -28,9 +28,6 @@
     become: yes   
 
 - hosts: all
-  connection: local
-  serial: 1
-  gather_facts: no
   become: yes
   become_method: sudo
 
@@ -39,9 +36,9 @@
     blockinfile:
       path: /etc/hosts
       block: |
-        10.0.0.5 hmaster
+        10.0.0.3 hmaster
         10.0.0.7 hworker-1
-        10.0.0.3 hworker-2
+        10.0.0.5 hworker-2
     become: yes
 
   - name: Add "/etc/ansible/hosts"
