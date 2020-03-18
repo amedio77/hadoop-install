@@ -45,6 +45,8 @@ chmod 600 ~/.ssh/kepri-msa.pem
 #sudo -- sh -c "echo hworker-1 >> /etc/ansible/hosts"
 #sudo -- sh -c "echo hworker-2 >> /etc/ansible/hosts"
 
+ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_hosts.yml
+
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_known_hosts.yml
 
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_authorized_keys.yml

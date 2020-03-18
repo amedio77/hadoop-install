@@ -53,9 +53,6 @@
     - name: create symbolic link
       file: src=/opt/hadoop-3.2.1 dest=/opt/hadoop state=link
 
-#    - name: .bashrc
-#      copy: src=.bashrc dest=/home/centos
-
     - name: hadoop conf core-site
       template: src=core-site.xml dest=/opt/hadoop/etc/hadoop
 
@@ -68,11 +65,11 @@
     - name: hadoop conf yarn-site
       template: src=yarn-site.xml dest=/opt/hadoop/etc/hadoop
 
-    - name: hadoop conf hadoop-env
-      template: src=hadoop-env.sh dest=/opt/hadoop/etc/hadoop
+#    - name: hadoop conf hadoop-env
+#      template: src=hadoop-env.sh dest=/opt/hadoop/etc/hadoop
 
-    - name: hadoop conf yarn-env
-      template: src=yarn-env.sh dest=/opt/hadoop/etc/hadoop
+#    - name: hadoop conf yarn-env
+#      template: src=yarn-env.sh dest=/opt/hadoop/etc/hadoop
 
 #    - name: hadoop service config
 #      copy: src=hadoop dest=/etc/init.d/hadoop mode=0777

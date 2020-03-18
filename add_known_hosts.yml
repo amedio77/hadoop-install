@@ -3,34 +3,11 @@
   connection: local
   serial: 1 
   gather_facts: no
-  become: yes
-  become_method: sudo
-  
-  tasks:
-  - name: Add "/etc/hosts"
-    blockinfile: 
-      path: /etc/hosts
-      block: |
-        10.0.0.7 hmaster
-        10.0.0.14 hworker-1
-        10.0.0.3 hworker-2
-    become: yes    
-  
-  - name: Add "/etc/ansible/hosts"
-    blockinfile: 
-      path: /etc/ansible/hosts
-      block: |
-        [masters]
-        hmaster    
-        [workers]
-        hworker-1
-        hworker-2
-    become: yes    
-  
+
+  tasks:  
   - name: add known_hosts
     command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }} 
     register: keyscan 
-    become: no
 
   - lineinfile:
       name=~/.ssh/known_hosts
@@ -38,5 +15,4 @@
       line={{ item }} 
     with_items:
       - "{{ keyscan.stdout_lines }}"
-    become: no  
 
