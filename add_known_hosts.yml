@@ -11,9 +11,9 @@
     blockinfile: 
       path: /etc/hosts
       block: |
-        10.0.0.11 hmaster
-        10.0.0.5 hworker-1
-        10.0.0.12 hworker-2
+        10.0.0.7 hmaster
+        10.0.0.14 hworker-1
+        10.0.0.3 hworker-2
     become: yes    
   
   - name: Add "/etc/ansible/hosts"
@@ -30,6 +30,7 @@
   - name: add known_hosts
     command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }} 
     register: keyscan 
+    become: no
 
   - lineinfile:
       name=~/.ssh/known_hosts
@@ -37,23 +38,5 @@
       line={{ item }} 
     with_items:
       - "{{ keyscan.stdout_lines }}"
-  
-  - name: ssh-keygen ansible-server
-    connection: local                 
-    command: "ssh-keygen -b 2048 -t rsa -f /home/centos/.ssh/id_rsa -q -N ''"
-    ignore_errors: yes
-    run_once: true                   
-
-  - name: import id_rsa.pub
-    connection: local
-    command: "cat /home/centos/.ssh/id_rsa.pub"
-    register: id_pub
-    run_once: true
-
-  - name: add ansible-node authrized keys
-    lineinfile:
-      dest: /home/centos/.ssh/authorized_keys
-      line: "{{ id_pub.stdout }}"
-
-  
+    become: no  
 

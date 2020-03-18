@@ -1,0 +1,23 @@
+---
+- hosts: all
+
+  tasks:
+
+  - name: ssh-keygen ansible-server
+    connection: local                 
+    command: "ssh-keygen -b 2048 -t rsa -f /home/centos/.ssh/id_rsa -q -N ''"
+    ignore_errors: yes
+    run_once: true                   
+
+  - name: import id_rsa.pub
+    connection: local
+    command: "cat /home/centos/.ssh/id_rsa.pub"
+    register: id_pub
+    run_once: true
+
+  - name: add ansible-node authrized keys
+    lineinfile:
+      dest: /home/centos/.ssh/authorized_keys
+      line: "{{ id_pub.stdout }}"
+  
+
