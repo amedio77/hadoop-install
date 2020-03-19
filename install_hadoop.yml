@@ -39,8 +39,8 @@
           export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
     - name: source ~/.bashrc
-      command: "source ~/.bashrc"
-#      shell: source ~/.bashrc
+#      command: "source ~/.bashrc"
+      shell: . /home/centos/.bashrc
 
     - name: check if hadoop is already downloaded 
       command: /usr/bin/test -e ~/hadoop-3.2.1.tar.gz
