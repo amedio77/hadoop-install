@@ -11,7 +11,7 @@ git clone https://github.com/amedio77/hadoop-install.git
 cd hadoop-install
 ```
 
-3. node ip change
+3. change node ip
 ```
 vi add_hosts.yml
 ...
