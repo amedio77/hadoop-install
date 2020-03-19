@@ -1,17 +1,17 @@
 # hadoop-install
 
-1.
+1. install git
 ```
 sudo yum install git -y
 ```
 
-2.
+2. clone hadoop install src
 ```
 git clone https://github.com/amedio77/hadoop-install.git
 cd hadoop-install
 ```
 
-3.
+3. node ip change
 ```
 vi add_hosts.yml
 ...
@@ -25,8 +25,10 @@ vi add_hosts.yml
         10.0.0.x hworker-2  # ip 수정
     become: yes
 ...    
+
 ```
-4. 
+
+4. ansible yml run
 ```
 ./install_hadoop.sh
 ```
