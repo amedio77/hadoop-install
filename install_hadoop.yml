@@ -39,8 +39,8 @@
           export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
     - name: source ~/.bashrc
-#      command: "source ~/.bashrc"
-      shell: . ~/.bashrc
+      command: "source ~/.bashrc"
+#      shell: source ~/.bashrc
 
     - name: check if hadoop is already downloaded 
       command: /usr/bin/test -e ~/hadoop-3.2.1.tar.gz
@@ -96,6 +96,9 @@
       - ~/hadoop/etc/hadoop/dfs/data
       - ~/hadoop/etc/hadoop/dfs/name
       become: no
+
+    - name: format hadoop namenode
+      command: " hadoop namenode -format "
 
 #    - name: hadoop conf hadoop-env
 #      template: src=hadoop-env.sh dest=~/hadoop/etc/hadoop
