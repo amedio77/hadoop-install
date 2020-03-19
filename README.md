@@ -31,4 +31,18 @@ vi add_hosts.yml
 4. ansible yml run
 ```
 ./install_hadoop.sh
+
+...
+
+
+exit
 ```
+
+5. hadoop namenode format
+```
+
+hadoop namenode -format
+```
+
+
+
