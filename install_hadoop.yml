@@ -20,28 +20,30 @@
     - name: install openjdk 1.8.0
       yum: name=java-1.8.0-openjdk state=present
 
+- name: Install hadoop
+  hosts: all
+
+  tasks:
     - name: Insert a line at the end of a file.
       blockinfile:
         path: /home/centos/.bashrc
-#        line: export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
         block: |
           export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-0.el7_7.x86_64
-          export HADOOP_HOME=/opt/hadoop/
+          export HADOOP_HOME=~/hadoop/
           export HADOOP_INSTALL=$HADOOP_HOME
           export HADOOP_MAPRED_HOME=$HADOOP_HOME
           export HADOOP_COMMON_HOME=$HADOOP_HOME
           export HADOOP_HDFS_HOME=$HADOOP_HOME
           export HADOOP_YARN_HOME=$HADOOP_HOME
           export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
-      become: no
+          export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
-    - name: source /home/centos/.bashrc
-#      command: "source /home/centos/.bashrc"
+    - name: source ~/.bashrc
+#      command: "source ~/.bashrc"
       shell: . ~/.bashrc
-      become: no
 
     - name: check if hadoop is already downloaded 
-      command: /usr/bin/test -e /home/centos/hadoop-3.2.1.tar.gz
+      command: /usr/bin/test -e ~/hadoop-3.2.1.tar.gz
       ignore_errors: True
       register: hadoop_exists
 
@@ -51,33 +53,55 @@
       when: hadoop_exists.rc != 0
  
     - name: check hadoop directory existence
-      stat: path=/opt/hadoop-3.2.1
+      stat: path=~/hadoop-3.2.1
       register: hadoop_dir  
 
     - name: extract hadoop
-      unarchive: src=/home/centos/hadoop-3.2.1.tar.gz dest=/opt copy=no
+      unarchive: src=~/hadoop-3.2.1.tar.gz dest=~ copy=no
       when: not hadoop_dir.stat.exists
 
     - name: create symbolic link
-      file: src=/opt/hadoop-3.2.1 dest=/opt/hadoop state=link
+      file: src=~/hadoop-3.2.1 dest=~/hadoop state=link
 
     - name: hadoop conf core-site
-      template: src=core-site.xml dest=/opt/hadoop/etc/hadoop
+      template: src=core-site.xml dest=~/hadoop/etc/hadoop
 
     - name: hadoop conf hdfs-site
-      template: src=hdfs-site.xml dest=/opt/hadoop/etc/hadoop
+      template: src=hdfs-site.xml dest=~/hadoop/etc/hadoop
 
     - name: hadoop conf mapred-site
-      template: src=mapred-site.xml dest=/opt/hadoop/etc/hadoop
+      template: src=mapred-site.xml dest=~/hadoop/etc/hadoop
 
     - name: hadoop conf yarn-site
-      template: src=yarn-site.xml dest=/opt/hadoop/etc/hadoop
+      template: src=yarn-site.xml dest=~/hadoop/etc/hadoop
+
+    - name: workers
+      template: src=workers dest=~/hadoop/etc/hadoop
+
+    - name: Insert workers file.
+      blockinfile:
+        path: ~/hadoop/etc/hadoop/workers
+        block: |
+          hworker-1
+          hworker-2
+      become: no
+
+    - name: Creates directory
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      with_items:
+      - ~/hadoop/pids
+      - ~/hadoop/etc/hadoop/dfs/data
+      - ~/hadoop/etc/hadoop/dfs/name
+      become: no
 
 #    - name: hadoop conf hadoop-env
-#      template: src=hadoop-env.sh dest=/opt/hadoop/etc/hadoop
+#      template: src=hadoop-env.sh dest=~/hadoop/etc/hadoop
 
 #    - name: hadoop conf yarn-env
-#      template: src=yarn-env.sh dest=/opt/hadoop/etc/hadoop
+#      template: src=yarn-env.sh dest=~/hadoop/etc/hadoop
 
 #    - name: hadoop service config
 #      copy: src=hadoop dest=/etc/init.d/hadoop mode=0777
