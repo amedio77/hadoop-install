@@ -41,13 +41,4 @@
         10.0.0.5 hworker-2
     become: yes
 
-  - name: Add "/etc/ansible/hosts"
-    blockinfile:
-      path: /etc/ansible/hosts
-      block: |
-        [masters]
-        hmaster
-        [workers]
-        hworker-1
-        hworker-2
-    become: yes 
+
