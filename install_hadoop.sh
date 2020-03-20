@@ -25,6 +25,8 @@ scp -i .ssh/kepri-msa.pem centos@10.0.0.8:~/hadoop-3.2.1.tar.gz .
 
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_hosts.yml
 
+ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_hosts.yml
+
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_known_hosts.yml
 
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_authorized_keys.yml
