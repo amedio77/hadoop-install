@@ -49,5 +49,7 @@
   tasks:
   - name: pem file cpoy
     template: src=~/.ssh/kepri-msa.pem dest=~/.ssh mode=600
-
+    
+  - name: hadoop-3.2.1.tar.gz cpoy
+    template: src=~/hadoop-3.2.1.tar.gz dest=~ 
 
