@@ -21,5 +21,6 @@
       line: "{{ id_pub.stdout }}"
       
   - name: authorized_keys
-    command: 'cat ~/.ssh/id_rsa.pub | ssh -i "~/.ssh/kepri-msa.pem" centos@{{ ansible_host }}  " cat - >> ~/.ssh/authorized_keys"' 
+    command: "cat ~/.ssh/id_rsa.pub | ssh -i '~/.ssh/kepri-msa.pem' centos@{{ ansible_host }}  ' cat - >> ~/.ssh/authorized_keys'"
+    shell: cat ~/.ssh/id_rsa.pub | ssh -i "~/.ssh/kepri-msa.pem" centos@{{ ansible_host }}  "cat - >> ~/.ssh/authorized_keys"
 
