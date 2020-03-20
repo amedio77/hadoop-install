@@ -41,8 +41,11 @@
         10.0.0.5 hworker-2
     become: yes
     
-  - name: pem.file cpoy
-    template: src=~/.ssh/kepri-msa.pem dest=~/.ssh/
-    became: no
+- hosts: all
+  gather_facts: no
+
+  tasks:
+  - name: pem file cpoy
+    template: src=~/.ssh/kepri-msa.pem dest=~/.ssh mode=600
 
 
