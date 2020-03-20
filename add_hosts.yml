@@ -28,6 +28,7 @@
     become: yes   
 
 - hosts: all
+  serial: 1 
   become: yes
   become_method: sudo
 
@@ -42,6 +43,7 @@
     become: yes
     
 - hosts: all
+  serial: 1 
   gather_facts: no
 
   tasks:
