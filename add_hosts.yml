@@ -40,5 +40,9 @@
         10.0.0.7 hworker-1
         10.0.0.5 hworker-2
     become: yes
+    
+  - name: pem.file cpoy
+    template: src=~/.ssh/kepri-msa.pem dest=~/.ssh/
+    became: no
 
 
