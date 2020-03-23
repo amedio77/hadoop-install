@@ -1,8 +1,17 @@
 # hadoop-install
 
-1. install git
+0. hadoop file copy
+```
+scp -i ~/.ssh/kepri-msa.pem ./hadoop-3.2.1.tar.gz centos@10.0.0.x:~ # 
+...
+
+```
+
+
+1. install git & 
 ```
 sudo yum install git -y
+
 ```
 
 2. clone hadoop install src
