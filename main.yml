@@ -1,0 +1,8 @@
+---
+name: Install cloud hadoop
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: add host
+    include_tasks: "add_host.yml"

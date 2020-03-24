@@ -1,0 +1,15 @@
+---
+i- hosts: all
+  serial: 1 
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Add "/etc/hosts"
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        10.0.0.12 hmaster
+        10.0.0.5 hworker-1
+        10.0.0.13 hworker-2
+    become: yes

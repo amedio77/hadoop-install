@@ -25,8 +25,6 @@ chmod 600 ~/.ssh/kepri-msa.pem
 
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_hosts.yml
 
-ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_hosts.yml
-
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_known_hosts.yml
 
 ansible-playbook  --private-key=~/.ssh/kepri-msa.pem add_authorized_keys.yml
