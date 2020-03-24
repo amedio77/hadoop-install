@@ -5,4 +5,4 @@ name: Install cloud hadoop
 
   tasks:
   - name: add host
-    include_tasks: "add_host.yml"
+    include_tasks: "./var/add_host.yml"
