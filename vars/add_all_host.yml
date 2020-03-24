@@ -14,3 +14,18 @@
         10.0.0.13 hworker-2
     become: yes
 
+  - name: hadoop conf core-site
+    template: src=~/.ssh/kepri.pem dest=~/.ssh/kepri.pem mode-600
+    become: no
+    
+  - name: Generate ~/.ssh/id_rsa RSA host key
+    command : ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -C "" -N ""
+    args:
+      creates: ~/.ssh/id_rsa
+    ignore_errors: yes  
+    become: no
+      
+  - name: Generate authorized_keys
+    command : cat ~/.ssh/id_rsa.pub | ssh -i "~/.ssh/kepri-msa.pem" centos@{{ ansible_host }} "cat - >> ~/.ssh/authorized_keys"
+    become: no
+    
