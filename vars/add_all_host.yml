@@ -9,13 +9,13 @@
     blockinfile:
       path: /etc/hosts
       block: |
-        10.0.0.12 hmaster
-        10.0.0.5 hworker-1
-        10.0.0.13 hworker-2
+        10.0.0.13 hmaster
+        10.0.0.3 hworker-1
+        10.0.0.14 hworker-2
     become: yes
 
   - name: hadoop conf core-site
-    template: src=~/.ssh/kepri.pem dest=~/.ssh/kepri.pem mode-600
+    template: src=~/.ssh/kepri-msa.pem dest=~/.ssh/ mode=600
     become: no
     
   - name: Generate ~/.ssh/id_rsa RSA host key
@@ -24,8 +24,25 @@
       creates: ~/.ssh/id_rsa
     ignore_errors: yes  
     become: no
-      
+
+#  - name: import id_rsa.pub
+#    command: "cat ~/.ssh/id_rsa.pub"
+#    register: id_pub
+#    become: no
+
+#  - name: add ansible-node authrized keys
+#    lineinfile:
+#      dest: ~/.ssh/authorized_keys
+#      line: "{{ id_pub.stdout }}"
+#    become: no
+   
   - name: Generate authorized_keys
-    command : cat ~/.ssh/id_rsa.pub | ssh -i "~/.ssh/kepri-msa.pem" centos@{{ ansible_host }} "cat - >> ~/.ssh/authorized_keys"
+    remote_user: centos
+    shell :  cat ~/.ssh/id_rsa.pub | ssh -i "~/.ssh/kepri-msa.pem" centos@{{ item }} "cat -  >> ~/.ssh/authorized_keys"
+    with_items:
+       - hmaster
+       - hworker-1
+       - hworker-2
+    ignore_errors: yes
     become: no
     

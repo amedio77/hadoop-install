@@ -11,9 +11,9 @@
     blockinfile: 
       path: /etc/hosts
       block: |
-        10.0.0.12 hmaster
-        10.0.0.5 hworker-1
-        10.0.0.13 hworker-2
+        10.0.0.13 hmaster
+        10.0.0.3 hworker-1
+        10.0.0.14 hworker-2
     become: yes    
   
   - name: Add "/etc/ansible/hosts"
