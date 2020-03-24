@@ -1,5 +1,5 @@
 ---
-i- hosts: all
+- hosts: all
   serial: 1 
   become: yes
   become_method: sudo
@@ -13,3 +13,4 @@ i- hosts: all
         10.0.0.5 hworker-1
         10.0.0.13 hworker-2
     become: yes
+
