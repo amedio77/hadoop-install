@@ -16,17 +16,18 @@
  #       10.0.0.14 hworker-2
  #   become: yes    
   
- # - name: Add "/etc/ansible/hosts"
- #   blockinfile: 
- #     path: /etc/ansible/hosts
- #     block: |
- #       [masters]
- #       hmaster    
- #       [workers]
- #       hworker-1
- #       hworker-2
- #   become: yes   
-
-  - template:
+  - name: Add "/etc/hosts"
+    template:
       src: hosts
       dest: /etc/hosts
+      
+  - name: Add "/etc/ansible/hosts"
+    blockinfile: 
+      path: /etc/ansible/hosts
+      block: |
+        [masters]
+        hmaster    
+        [workers]
+        hworker-1
+        hworker-2
+    become: yes   
