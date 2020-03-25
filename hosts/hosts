@@ -1,0 +1,3 @@
+10.0.0.1 hmaster
+10.0.0.2 hworker-1
+10.0.0.3 hworker-2

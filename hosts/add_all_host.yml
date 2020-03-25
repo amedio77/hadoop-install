@@ -1,0 +1,84 @@
+---
+- hosts: all
+  serial: 1 
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Add "/etc/hosts"
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        10.0.0.5 hmaster
+        10.0.0.4 hworker-1
+        10.0.0.12 hworker-2
+    become: yes
+
+  - name: hadoop conf core-site
+    template: src=~/.ssh/kepri-msa.pem dest=~/.ssh/ mode=600
+    become: no
+    
+  - name: Generate ~/.ssh/id_rsa RSA host key
+    command : ssh-keygen -q -t rsa -f ~/.ssh/id_rsa -C "" -N ""
+    args:
+      creates: ~/.ssh/id_rsa
+    ignore_errors: yes  
+    become: no
+
+
+  - name: add known_hosts
+    command: /usr/bin/ssh-keyscan -t ecdsa centos@{{ item }} 
+    register: keyscan 
+    with_items:
+       - hmaster
+       - hworker-1
+       - hworker-2
+    become: no
+  - lineinfile:
+      name=~/.ssh/known_hosts
+      create=yes
+      line={{ item }} 
+    with_items:
+      - "{{ keyscan.results[0].stdout_lines }}"
+      - "{{ keyscan.results[1].stdout_lines }}"
+      - "{{ keyscan.results[2].stdout_lines }}"
+    become: no
+
+  - name: import id_rsa.pub
+    command: "cat ~/.ssh/id_rsa.pub"
+    register: id_pub
+    become: no
+  - name: add ansible-node authrized keys
+    lineinfile:
+      dest: ~/.ssh/authorized_keys
+      line: "{{ id_pub.stdout }}"
+    become: no
+   
+
+#  - name: Generate authorized_keys
+#   remote_user: centos
+#    shell : 'cat ~/.ssh/id_rsa.pub |  ssh -i ~/.ssh/kepri-msa.pem centos@{{ item }} cat -  >> ~/.ssh/authorized_keys '
+#    with_items:
+#      - hmaster
+#      - hworker-1
+#      - hworker-2
+#    ignore_errors: yes
+#    become: no
+
+- hosts: all
+  tasks:
+    - authorized_key:
+        user: centos
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- hosts: all
+  become: no
+  tasks:
+  - local_action: command ssh-copy-id {{ item }}
+    with_items:
+      - hmaster
+      - hworker-1
+      - hworker-2
+
+

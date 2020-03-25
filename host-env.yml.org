@@ -14,7 +14,7 @@
   connection: local
   serial: 1
   gather_facts: no
-
+  
   tasks:
   - name: add_known_hosts
     include_tasks: "./hosts/add_known_hosts.yml"

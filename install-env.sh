@@ -45,3 +45,4 @@ chmod 600 ~/.ssh/kepri-msa.pem
 #sudo -- sh -c "echo hworker-2 >> /etc/ansible/hosts"
 
 #scp -i ~/.ssh/kepri-msa.pem centos@10.0.0.8:~/hadoop-3.2.1.tar.gz .
+
