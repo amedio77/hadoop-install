@@ -1,0 +1,15 @@
+---
+- hosts: all
+  serial: 1 
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+  - name: host_list debug
+    debug:
+      msg: ping
+    delegate_to: '{{ item }}'
+    # This with_items line will run successfully *unless* we set host_list using set_fact.
+    with_items: '{{ groups.all }}'
+
