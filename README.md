@@ -22,7 +22,7 @@ cd hadoop-install
 
 3. change node ip
 ```
-vi add_hosts.yml
+vi hosts/add_hosts.yml
 ...
   tasks:
   - name: Add "/etc/hosts"
@@ -35,22 +35,41 @@ vi add_hosts.yml
     become: yes
 ...    
 
+
+
+vi hosts/add_all_host.yml
+...
+  tasks:
+  - name: Add "/etc/hosts"
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        10.0.0.x hmaster    # ip 수정
+        10.0.0.x hworker-1  # ip 수정
+        10.0.0.x hworker-2  # ip 수정
+    become: yes
+... 
 ```
 
-4. ansible yml run
+4. install ansible & create pem file 
 ```
-./install_hadoop.sh
-
+./install-env.sh
 ...
 
-
-exit
 ```
 
-5. hadoop namenode format
+5. vm host ssh auto pass 
+```
+./install-host.sh
+...
+
 ```
 
-hadoop namenode -format
+
+6. hadoop install
+```
+
+./install-hadoop.sh
 ```
 
 
