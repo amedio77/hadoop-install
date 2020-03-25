@@ -1,26 +1,22 @@
----
-- hosts: localhost
-  connection: local
+#---
+#- hosts: localhost
+#  connection: local
 #  serial: 1 
-  gather_facts: no
-  become: yes
-  become_method: sudo
+#  gather_facts: no
+#  become: yes
+#  become_method: sudo
   
-  tasks:
- # - name: Add "/etc/hosts"
- #   blockinfile: 
- #     path: /etc/hosts
- #     block: |
- #       10.0.0.13 hmaster
- #       10.0.0.3 hworker-1
- #       10.0.0.14 hworker-2
- #   become: yes    
-  
+#  tasks:
   - name: Add "/etc/hosts"
-    template:
-      src: hosts
-      dest: /etc/hosts
-      
+    blockinfile: 
+      path: /etc/hosts
+      block: |
+        10.0.0.14 hmaster
+        10.0.0.5 hworker-1
+        10.0.0.11 hworker-2
+    become: yes    
+ 
+       
   - name: Add "/etc/ansible/hosts"
     blockinfile: 
       path: /etc/ansible/hosts

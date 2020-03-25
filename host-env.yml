@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  connection: local
+  serial: 1
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: add host
+    include_tasks: "./vars/add_hosts.yml"
+
+- hosts: all
+  connection: local
+  serial: 1
+  gather_facts: no
+  
+  tasks:
+  - name: add_known_hosts
+    include_tasks: "./vars/add_known_hosts.yml"
+
+- hosts: all
+  serial: 1
+  gather_facts: no
+  tasks:
+
+  - name: add_authorized_keys
+    include_tasks: "./vars/add_authorized_keys.yml"

@@ -1,10 +1,10 @@
----
-- hosts: all
-  connection: local
-  serial: 1 
-  gather_facts: no
+#---
+#- hosts: all
+#  connection: local
+#  serial: 1 
+#  gather_facts: no
 
-  tasks:  
+#  tasks:  
   - name: add known_hosts
     command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }} 
     register: keyscan 

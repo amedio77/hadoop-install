@@ -1,7 +1,7 @@
----
-- hosts: all
-  gather_facts: no
-  tasks:
+#---
+#- hosts: all
+#  gather_facts: no
+#  tasks:
 
   - name: ssh-keygen ansible-server
     connection: local                 
