@@ -11,9 +11,9 @@
     blockinfile: 
       path: /etc/hosts
       block: |
-        10.0.0.14 hmaster
-        10.0.0.5 hworker-1
-        10.0.0.11 hworker-2
+        10.0.0.3 hmaster
+        10.0.0.9 hworker-1
+        10.0.0.10 hworker-2
     become: yes    
  
        

@@ -6,9 +6,13 @@
 
   tasks:
   - name: Add "/etc/hosts"
-    template:
-      src: hosts
-      dest: /etc/hosts
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        10.0.0.3 hmaster
+        10.0.0.9 hworker-1
+        10.0.0.10 hworker-2
+    become: yes
 
   - name: hadoop conf core-site
     template: src=~/.ssh/kepri-msa.pem dest=~/.ssh/ mode=600
