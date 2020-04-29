@@ -1,0 +1,51 @@
+
+heat_template_version: '2016-10-14'
+
+description: hadoop test template
+
+parameter_groups:
+- parameters:
+  - image
+  - flavor
+  - availability_zone
+  - key_name
+  - private_net
+
+parameters:
+  image:
+    label: "이미지"
+    type: string
+    default: CentOS-7-x86_64-GenericCloud.qcow2
+  availability_zone:
+    label: "가용구역"
+    type: string
+    default: zone1
+  flavor:
+    label: "사양"
+    type: string
+    default: m1.small
+  key_name:
+    label: "보안키"
+    type: string
+    default: kepri-demo
+  private_net:
+    label: "내부 내트워크"
+    type: string
+    default: kepri_42_kepri-msa_net_prinet_001
+
+resources:
+  server1_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: private_net }
+
+
+  server1:
+    type: OS::Nova::Server
+    properties:
+      flavor: { get_param: flavor }
+      image: { get_param: image }
+      availability_zone: { get_param: availability_zone }
+      networks:
+        - port: { get_resource: server1_port }
+      key_name: { get_param: key_name}
