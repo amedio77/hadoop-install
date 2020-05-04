@@ -69,7 +69,7 @@ vi hosts/add_all_host.yml
 6. hadoop install
 ```
 
-./install-hadoop.sh
+./ansible-playbook --private-key ~/.ssh/kepri-msa.pem install_hadoop.yml
 ```
 
 
