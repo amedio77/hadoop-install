@@ -72,5 +72,49 @@ vi hosts/add_all_host.yml
 ./ansible-playbook --private-key ~/.ssh/kepri-msa.pem install_hadoop.yml
 ```
 
+7. master, worker 모든 node 에서 시작
 
+```
+source ~/.bashrc
+
+~/hadoop/sbin/start-all.sh &
+
+```
+
+7. 확인
+```
+## master node
+$ jps
+30225 NameNode
+30915 ResourceManager
+31221 Jps
+30703 SecondaryNameNode
+
+## worker node
+$ jps
+25264 NodeManager
+24934 SecondaryNameNode
+25158 ResourceManager
+24764 DataNode
+25647 Jps
+
+
+```
+
+8. haproxy
+```
+listen hadoop-admin  
+    balance  roundrobin
+    bind :9870
+    log global
+    mode tcp
+    option tcplog
+    server pregid1 10.1.8.10:9870 check
+    server pregid2 10.1.8.10:9870 check backup
+
+sudo service haproxy restart
+
+sudo setsebool -P haproxy_connect_any=1
+
+```
 
