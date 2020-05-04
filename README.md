@@ -103,18 +103,25 @@ $ jps
 
 8. haproxy
 ```
-listen hadoop-admin  
+listen hadoop-admin
     balance  roundrobin
     bind :9870
     log global
     mode tcp
     option tcplog
     server pregid1 10.1.8.10:9870 check
-    server pregid2 10.1.8.10:9870 check backup
 
-sudo service haproxy restart
+listen hadoop-yarn
+    balance  roundrobin
+    bind :8088
+    log global
+    mode tcp
+    option tcplog
+    server pregid1 10.1.8.10:8088 check
 
 sudo setsebool -P haproxy_connect_any=1
+
+sudo service haproxy restart
 
 ```
 
