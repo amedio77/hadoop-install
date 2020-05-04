@@ -124,4 +124,15 @@ sudo setsebool -P haproxy_connect_any=1
 sudo service haproxy restart
 
 ```
+admin
+http://101.55.126.207:9870
+
+yarn
+http://101.55.126.207:8088
+
+node-1
+http://101.55.126.207:9864
+
+node-2
+http://101.55.126.207:9865
 
