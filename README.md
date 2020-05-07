@@ -1,5 +1,7 @@
 # hadoop-install
 
+https://medium.com/@jootorres_11979/how-to-set-up-a-hadoop-3-2-1-multi-node-cluster-on-ubuntu-18-04-2-nodes-567ca44a3b12
+
 0. hadoop file copy
 ```
 scp -i ~/.ssh/kepri-msa.pem ./hadoop-3.2.1.tar.gz centos@10.0.0.x:~ # 
@@ -72,12 +74,17 @@ vi hosts/add_all_host.yml
 ./ansible-playbook --private-key ~/.ssh/kepri-msa.pem install_hadoop.yml
 ```
 
-7. master, worker 모든 node 에서 시작
+
+
+
+7. master node 에서 시작
 
 ```
 source ~/.bashrc
 
-~/hadoop/sbin/start-all.sh &
+$ start-dfs.sh
+
+$ start-yarn.sh 
 
 ```
 
@@ -85,18 +92,16 @@ source ~/.bashrc
 ```
 ## master node
 $ jps
-30225 NameNode
-30915 ResourceManager
-31221 Jps
-30703 SecondaryNameNode
+8273 Jps
+6473 SecondaryNameNode
+6254 NameNode
+7790 ResourceManager
 
 ## worker node
 $ jps
-25264 NodeManager
-24934 SecondaryNameNode
-25158 ResourceManager
-24764 DataNode
-25647 Jps
+2002 Jps
+1044 DataNode
+1686 NodeManager
 
 
 ```
@@ -135,4 +140,7 @@ http://101.55.126.207:9864
 
 node-2
 http://101.55.126.207:9865
+
+jobhistory
+http://101.55.126.207:19888
 
