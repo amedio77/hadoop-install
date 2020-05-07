@@ -30,7 +30,11 @@
     <value>/home/centos/hadoop/etc/hadoop/dfs/name</value>
 </property>
 <property>
+  <name>dfs.namenode.checkpoint.dir</name>
+    <value>/home/centos/hadoop/etc/hadoop/dfs/namesecondary</value>
+</property>  
+<property>
 <name>dfs.permissions</name>
-<value>false</value>
+<value>true</value>
 </property>
 </configuration>
