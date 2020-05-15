@@ -9,9 +9,7 @@
     blockinfile:
       path: /etc/hosts
       block: |
-        10.0.0.11 hmaster
-        10.0.0.3 hworker-1
-        10.0.0.9 hworker-2
+        {{input_host}}
     become: yes
 
   - name: copy pem key to host
