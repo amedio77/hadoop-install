@@ -24,33 +24,18 @@ cd hadoop-install
 
 3. change node ip
 ```
-vi hosts/add_hosts.yml
+vi install-host.sh
 ...
-  tasks:
-  - name: Add "/etc/hosts"
-    blockinfile:
-      path: /etc/hosts
-      block: |
-        10.0.0.x hmaster    # ip 수정
-        10.0.0.x hworker-1  # ip 수정
-        10.0.0.x hworker-2  # ip 수정
-    become: yes
+
+ansible-playbook --private-key ~/.ssh/kepri-msa.pem host-local-env.yml \
+ -e 'input_host="10.1.8.14 hmaster\n10.1.8.3 hworker-1\n10.1.8.5 hworker-2" \
+     input_ansible_host="[master]\nhmaster\n[workers]\nhworker-1\nhworker-2"'
+
+ansible-playbook --private-key ~/.ssh/kepri-msa.pem host-env.yml \
+ -e 'input_host="10.1.8.14 hmaster\n10.1.8.3 hworker-1\n10.1.8.5 hworker-2"'
+ 
 ...    
 
-
-
-vi hosts/add_all_host.yml
-...
-  tasks:
-  - name: Add "/etc/hosts"
-    blockinfile:
-      path: /etc/hosts
-      block: |
-        10.0.0.x hmaster    # ip 수정
-        10.0.0.x hworker-1  # ip 수정
-        10.0.0.x hworker-2  # ip 수정
-    become: yes
-... 
 ```
 
 4. install ansible & create pem file 
