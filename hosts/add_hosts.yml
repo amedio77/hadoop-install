@@ -11,9 +11,7 @@
     blockinfile: 
       path: /etc/hosts
       block: |
-        10.0.0.9 hmaster
-        10.0.0.3 hworker-1
-        10.0.0.11 hworker-2
+        {{input_host}}
     become: yes    
  
        
@@ -21,9 +19,5 @@
     blockinfile: 
       path: /etc/ansible/hosts
       block: |
-        [masters]
-        hmaster    
-        [workers]
-        hworker-1
-        hworker-2
+        {{input_ansible_host}}
     become: yes   
