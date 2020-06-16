@@ -13,7 +13,7 @@
     become: yes
 
   - name: copy pem key to host
-    template: src=~/.ssh/kepri-msa.pem dest=~/.ssh/ mode=600
+    template: src=~/.ssh/{{keyname}} dest=~/.ssh/ mode=600
     become: no
     
   - name: Generate ~/.ssh/id_rsa RSA host key
@@ -35,7 +35,7 @@
 
   - name: Generate authorized_keys
     remote_user: centos
-    shell : cat ~/.ssh/id_rsa.pub |  ssh -i "~/.ssh/kepri-msa.pem" centos@{{ item }} "cat -  >> ~/.ssh/authorized_keys" 
+    shell : cat ~/.ssh/id_rsa.pub |  ssh -i "~/.ssh/{{keyname}}" centos@{{ item }} "cat -  >> ~/.ssh/authorized_keys" 
     with_items: '{{ groups.all }}'
 #      - hmaster
 #      - hworker-1
