@@ -1,0 +1,329 @@
+
+heat_template_version: '2016-10-14'
+
+description: hadoop test template
+
+parameter_groups:
+- parameters:
+  - image
+  - flavor
+  - availability_zone
+  - key_name
+  - private_net
+  - root_password
+  
+parameters:
+  image:
+    label: "이미지"
+    type: string
+    default: hadoop-base-1
+  availability_zone:
+    label: "가용구역"
+    type: string
+    default: zone01
+  flavor:
+    label: "사양"
+    type: string
+    default: m1.small
+  key_name:
+    label: "보안키"
+    type: string
+    default: kepri-msa_default
+  private_net:
+    label: "내부 내트워크"
+    type: string
+    default: provider01
+  root_password:
+    label: "root 비밀번호"
+    type: string
+    default: crossent12
+        
+resources:
+
+  server1_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: private_net }
+
+  server2_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: private_net }
+      
+  server3_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: private_net }
+
+
+  init_config1:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config:
+        str_replace:
+          params:
+            $root_password: { get_param: root_password }
+            $master_address: { get_attr: [server1_port, fixed_ips, 0, ip_address] }
+            $node1_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $node2_address: { get_attr: [server3_port, fixed_ips, 0, ip_address] }
+            $server_addresses:
+              list_join:
+                - ','
+                - - { get_attr: [server1_port, fixed_ips, 0, ip_address] }
+                  - { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+                  - { get_attr: [server3_port, fixed_ips, 0, ip_address] }
+          template: |
+            #!/bin/sh
+            echo "hadoop1 install start ....5"
+            
+            su - centos -c /opt/linux/agent-service start
+            
+            cat <<EOF> /home/centos/.ssh/kepri-msa_default.pem 
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEAtCxfOF2as6oxUTYRS76Ecj2ZKjMEJlBKnTIrcoGADygJP2jL
+            0Wdz7P5XuJnhHeM0NVSiWxJgcYi4/A88hR4QDeVNYrgaqBUwssH6AOtBfq7alBKv
+            B9fQG2VYATdQHK7n2e7NoNYv1sPStIdAPRaGj7agFw+vLY4So6z6Wff/a+E8UxQX
+            Y5gtJFn+yyi/pD7fXU/rpw7hDOdIlPFzkHseT3OxVzIJwIo5unI+5znPRbUTA1m6
+            6xqp1UhdnICL/oh1jWH9A8dFPD2MK0GQQGFBe1RPggMnANVsIwjxusV1a/OUtSbd
+            C3EYumTN79/SqmaMuOgIqHhOkCE2uT2ptFrB4wIDAQABAoIBACaX0pWqRzbw37t7
+            j1zgJFKsKyDE6MCkNjdRxcizQJD+jGyOsAnc1RIQsQ2TuIrEXiyGQniriQkItkcX
+            pGkHNX0kft0EfoE+eL3xmvGTcuYF4kAReHh/m84ieSVZicl7FaKy6kznVDv2mi2d
+            Qv9S0eP6xHPsIiPp6MgyhzW6T3X13pSnBcJA5RurcIFVRwtgmzh/7R+g4nWmu8zG
+            EIGXmMUqYq//b8L0OULODMUtxwB0stq0u/2IYO24L3lJvIZhs7fk7aiv4XoP8eAV
+            Gqfa+6ZBh6B+80nulzCEqT7dgtI9XD8uqzQm3eX+bmd1ndRGOoRGpsU8r31z9vLX
+            coA5Z9ECgYEA7VTtkNekSrGtFufIwtPRj64NrffBjKpj8CICUn+sT6iu49WiInvj
+            34ig++r+oRIKY05S3FHJRVltNFozHZoCBiA+6FB6oAyJgopDZNauGxgThL4yKv75
+            XKR/0jqsqslnWsE+z9pHjchIxLkI/oe9+XZ/MYxletIwFlxq7RDIdhUCgYEAwlh2
+            pePEMLUeQkoMfso7qVBM0ygr61Wd1aGfDIBgCKpJF0hoVc8ZdJT2SfcwIEPdr/kq
+            MtholKApjh1oIehnwpdAOwDieJTjapvLwE/09Is0k2+N87ZBJENqoutP3uG29pQK
+            SsdtasLofkGZIVl5uu6lxEFlDycswGOQOSAXDhcCgYBVd50p6Q5oO736nrPkvYUd
+            OfABM1THRGFDC+xMK2AxO6znrXp68qSoTjqzHfhepvGIu58JaoaR69dw3/7CbUDH
+            Vftxi/HtCzbGBOaqPMlsRmpZBmlopHPGkhLZ8XlW87q9qxPkpFXaUEMsXPpJNzcJ
+            zEuX21h8N49LrjJvdvjJ1QKBgCELN4k3M9lwQifVPVClhAViwN06PFV0JjT3mPpg
+            LXPruCe8SPkmEFbxKPski0tBHsVX4SPqBcYXgVlHiLgTMuk0HFir6tXDwvMScE9P
+            iP+3V4Yl9oXUnDjVOaFfzyG/UQOV4jYauHDpmOw2rRmtg/QTtZ2r3Mn5yDMh+pir
+            6x+bAoGBAOG+mM2mzEBAIVn4IlqxvyTyZ6BoMJYXuQDjmV9hn+38Qo8gkh2gvlcq
+            IDuG0wsEWCAXsXsglpUunADRVtiwJQKss/TsmiX29ahNqUJqf8PRBuk9dE/uda6+
+            YzIkI7s0BHathDIoiwSGtcdJMosbh+kZRIE3jjIejtdaVd5IQU/A
+            -----END RSA PRIVATE KEY-----
+            EOF
+            
+            chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
+            
+            chmod 600 /home/centos/.ssh/kepri-msa_default.pem
+            
+            echo "address1=$master_address"
+            echo "address2=$node1_address"
+            echo "address3=$node2_address"
+            
+            yum -y install nc
+            
+            masterRun=1
+            while [[ masterRun -eq 1 ]]
+            do
+              echo "nc -z $node1_address 9999"
+              nc -z $node1_address 9999
+              masterRun=$?
+              sleep 5
+            done
+            echo "node1 active"
+            
+            
+            masterRun=1
+            while [[ masterRun -eq 1 ]]
+            do
+              echo "nc -z $node2_address 9999"
+              nc -z $node2_address 9999
+              masterRun=$?
+              sleep 5
+            done
+            echo "node2 active"
+            
+            echo "host setting start"
+            
+            sudo -i -u centos bash << EOF
+            
+            cd /home/centos/hadoop-install
+            
+            echo "1111111111"
+            ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-local-env.yml \
+            -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" \
+            input_ansible_host="[master]\nhmaster\n[workers]\nhworker-1\nhworker-2" keyname="kepri-msa_default.pem"'
+
+            sleep 3
+    
+            echo "222222222"  
+            ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-env.yml \
+            -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" keyname="kepri-msa_default.pem"'
+            
+            echo "3333333333" 
+            cat <<EOF> ~/hadoop/etc/hadoop/workers 
+            hworker-1
+            hworker-2
+            EOF
+            
+            echo "hadoop namenode -format" 
+            hadoop namenode -format
+            
+            echo "start-dfs" 
+            /home/centos/hadoop/sbin/start-dfs.sh
+            
+            echo "start-yarn" 
+            /home/centos/hadoop/sbin/start-yarn.sh
+            
+            
+            EOF
+                        
+            echo "hadoop setting end"
+            
+  init_config2:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config:
+        str_replace:
+          params:
+            $root_password: { get_param: root_password }
+            $node_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $server_addresses:
+              list_join:
+                - ','
+                - - { get_attr: [server1_port, fixed_ips, 0, ip_address] }
+                  - { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+                  - { get_attr: [server3_port, fixed_ips, 0, ip_address] }
+          template: |
+            #!/bin/sh
+            echo "hadoop2 install start" 
+
+
+            cat <<EOF> ~/.ssh/kepri-msa_default.pem 
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEAtCxfOF2as6oxUTYRS76Ecj2ZKjMEJlBKnTIrcoGADygJP2jL
+            0Wdz7P5XuJnhHeM0NVSiWxJgcYi4/A88hR4QDeVNYrgaqBUwssH6AOtBfq7alBKv
+            B9fQG2VYATdQHK7n2e7NoNYv1sPStIdAPRaGj7agFw+vLY4So6z6Wff/a+E8UxQX
+            Y5gtJFn+yyi/pD7fXU/rpw7hDOdIlPFzkHseT3OxVzIJwIo5unI+5znPRbUTA1m6
+            6xqp1UhdnICL/oh1jWH9A8dFPD2MK0GQQGFBe1RPggMnANVsIwjxusV1a/OUtSbd
+            C3EYumTN79/SqmaMuOgIqHhOkCE2uT2ptFrB4wIDAQABAoIBACaX0pWqRzbw37t7
+            j1zgJFKsKyDE6MCkNjdRxcizQJD+jGyOsAnc1RIQsQ2TuIrEXiyGQniriQkItkcX
+            pGkHNX0kft0EfoE+eL3xmvGTcuYF4kAReHh/m84ieSVZicl7FaKy6kznVDv2mi2d
+            Qv9S0eP6xHPsIiPp6MgyhzW6T3X13pSnBcJA5RurcIFVRwtgmzh/7R+g4nWmu8zG
+            EIGXmMUqYq//b8L0OULODMUtxwB0stq0u/2IYO24L3lJvIZhs7fk7aiv4XoP8eAV
+            Gqfa+6ZBh6B+80nulzCEqT7dgtI9XD8uqzQm3eX+bmd1ndRGOoRGpsU8r31z9vLX
+            coA5Z9ECgYEA7VTtkNekSrGtFufIwtPRj64NrffBjKpj8CICUn+sT6iu49WiInvj
+            34ig++r+oRIKY05S3FHJRVltNFozHZoCBiA+6FB6oAyJgopDZNauGxgThL4yKv75
+            XKR/0jqsqslnWsE+z9pHjchIxLkI/oe9+XZ/MYxletIwFlxq7RDIdhUCgYEAwlh2
+            pePEMLUeQkoMfso7qVBM0ygr61Wd1aGfDIBgCKpJF0hoVc8ZdJT2SfcwIEPdr/kq
+            MtholKApjh1oIehnwpdAOwDieJTjapvLwE/09Is0k2+N87ZBJENqoutP3uG29pQK
+            SsdtasLofkGZIVl5uu6lxEFlDycswGOQOSAXDhcCgYBVd50p6Q5oO736nrPkvYUd
+            OfABM1THRGFDC+xMK2AxO6znrXp68qSoTjqzHfhepvGIu58JaoaR69dw3/7CbUDH
+            Vftxi/HtCzbGBOaqPMlsRmpZBmlopHPGkhLZ8XlW87q9qxPkpFXaUEMsXPpJNzcJ
+            zEuX21h8N49LrjJvdvjJ1QKBgCELN4k3M9lwQifVPVClhAViwN06PFV0JjT3mPpg
+            LXPruCe8SPkmEFbxKPski0tBHsVX4SPqBcYXgVlHiLgTMuk0HFir6tXDwvMScE9P
+            iP+3V4Yl9oXUnDjVOaFfzyG/UQOV4jYauHDpmOw2rRmtg/QTtZ2r3Mn5yDMh+pir
+            6x+bAoGBAOG+mM2mzEBAIVn4IlqxvyTyZ6BoMJYXuQDjmV9hn+38Qo8gkh2gvlcq
+            IDuG0wsEWCAXsXsglpUunADRVtiwJQKss/TsmiX29ahNqUJqf8PRBuk9dE/uda6+
+            YzIkI7s0BHathDIoiwSGtcdJMosbh+kZRIE3jjIejtdaVd5IQU/A
+            -----END RSA PRIVATE KEY-----
+            EOF
+            chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
+            chmod 600 ~/.ssh/kepri-msa_default.pem
+
+            yum -y install nc
+            sleep 1
+            nc -lk 9999
+
+
+  init_config3:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config:
+        str_replace:
+          params:
+            $root_password: { get_param: root_password }
+            $node_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $server_addresses:
+              list_join:
+                - ','
+                - - { get_attr: [server1_port, fixed_ips, 0, ip_address] }
+                  - { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+                  - { get_attr: [server3_port, fixed_ips, 0, ip_address] }
+          template: |
+            #!/bin/sh
+            echo "hadoop3 install start" 
+            
+            cat <<EOF> ~/.ssh/kepri-msa_default.pem 
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEAtCxfOF2as6oxUTYRS76Ecj2ZKjMEJlBKnTIrcoGADygJP2jL
+            0Wdz7P5XuJnhHeM0NVSiWxJgcYi4/A88hR4QDeVNYrgaqBUwssH6AOtBfq7alBKv
+            B9fQG2VYATdQHK7n2e7NoNYv1sPStIdAPRaGj7agFw+vLY4So6z6Wff/a+E8UxQX
+            Y5gtJFn+yyi/pD7fXU/rpw7hDOdIlPFzkHseT3OxVzIJwIo5unI+5znPRbUTA1m6
+            6xqp1UhdnICL/oh1jWH9A8dFPD2MK0GQQGFBe1RPggMnANVsIwjxusV1a/OUtSbd
+            C3EYumTN79/SqmaMuOgIqHhOkCE2uT2ptFrB4wIDAQABAoIBACaX0pWqRzbw37t7
+            j1zgJFKsKyDE6MCkNjdRxcizQJD+jGyOsAnc1RIQsQ2TuIrEXiyGQniriQkItkcX
+            pGkHNX0kft0EfoE+eL3xmvGTcuYF4kAReHh/m84ieSVZicl7FaKy6kznVDv2mi2d
+            Qv9S0eP6xHPsIiPp6MgyhzW6T3X13pSnBcJA5RurcIFVRwtgmzh/7R+g4nWmu8zG
+            EIGXmMUqYq//b8L0OULODMUtxwB0stq0u/2IYO24L3lJvIZhs7fk7aiv4XoP8eAV
+            Gqfa+6ZBh6B+80nulzCEqT7dgtI9XD8uqzQm3eX+bmd1ndRGOoRGpsU8r31z9vLX
+            coA5Z9ECgYEA7VTtkNekSrGtFufIwtPRj64NrffBjKpj8CICUn+sT6iu49WiInvj
+            34ig++r+oRIKY05S3FHJRVltNFozHZoCBiA+6FB6oAyJgopDZNauGxgThL4yKv75
+            XKR/0jqsqslnWsE+z9pHjchIxLkI/oe9+XZ/MYxletIwFlxq7RDIdhUCgYEAwlh2
+            pePEMLUeQkoMfso7qVBM0ygr61Wd1aGfDIBgCKpJF0hoVc8ZdJT2SfcwIEPdr/kq
+            MtholKApjh1oIehnwpdAOwDieJTjapvLwE/09Is0k2+N87ZBJENqoutP3uG29pQK
+            SsdtasLofkGZIVl5uu6lxEFlDycswGOQOSAXDhcCgYBVd50p6Q5oO736nrPkvYUd
+            OfABM1THRGFDC+xMK2AxO6znrXp68qSoTjqzHfhepvGIu58JaoaR69dw3/7CbUDH
+            Vftxi/HtCzbGBOaqPMlsRmpZBmlopHPGkhLZ8XlW87q9qxPkpFXaUEMsXPpJNzcJ
+            zEuX21h8N49LrjJvdvjJ1QKBgCELN4k3M9lwQifVPVClhAViwN06PFV0JjT3mPpg
+            LXPruCe8SPkmEFbxKPski0tBHsVX4SPqBcYXgVlHiLgTMuk0HFir6tXDwvMScE9P
+            iP+3V4Yl9oXUnDjVOaFfzyG/UQOV4jYauHDpmOw2rRmtg/QTtZ2r3Mn5yDMh+pir
+            6x+bAoGBAOG+mM2mzEBAIVn4IlqxvyTyZ6BoMJYXuQDjmV9hn+38Qo8gkh2gvlcq
+            IDuG0wsEWCAXsXsglpUunADRVtiwJQKss/TsmiX29ahNqUJqf8PRBuk9dE/uda6+
+            YzIkI7s0BHathDIoiwSGtcdJMosbh+kZRIE3jjIejtdaVd5IQU/A
+            -----END RSA PRIVATE KEY-----
+            EOF
+            chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
+            chmod 600 ~/.ssh/kepri-msa_default.pem
+            
+            yum -y install nc
+            sleep 1
+            nc -lk 9999
+            
+  server1:
+    type: OS::Nova::Server
+    properties:
+      flavor: { get_param: flavor }
+      image: { get_param: image }
+      availability_zone: { get_param: availability_zone }
+      networks:
+        - port: { get_resource: server1_port }
+      key_name: { get_param: key_name}
+      user_data_format: RAW
+      user_data:
+        get_resource: init_config1
+              
+  server2:
+    type: OS::Nova::Server
+    properties:
+      flavor: { get_param: flavor }
+      image: { get_param: image }
+      availability_zone: { get_param: availability_zone }
+      networks:
+        - port: { get_resource: server2_port }
+      key_name: { get_param: key_name}    
+      user_data_format: RAW
+      user_data:
+        get_resource: init_config2
+        
+  server3:
+    type: OS::Nova::Server
+    properties:
+      flavor: { get_param: flavor }
+      image: { get_param: image }
+      availability_zone: { get_param: availability_zone }
+      networks:
+        - port: { get_resource: server3_port }
+      key_name: { get_param: key_name}
+      user_data_format: RAW
+      user_data:
+        get_resource: init_config3      
