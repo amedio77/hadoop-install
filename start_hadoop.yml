@@ -1,0 +1,13 @@
+---
+- name: Install java
+  hosts: localhost
+
+  tasks:
+    - name: format hadoop namenode
+      command: " hadoop namenode -format "
+
+    - name: hadoop conf hdfs
+      command: "/home/centos/hadoop/sbin/start-dfs.sh "
+
+    - name: hadoop conf yarn
+      command: "/home/centos/hadoop/sbin/start-yarn.sh "
