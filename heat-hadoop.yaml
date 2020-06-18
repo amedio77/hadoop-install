@@ -16,7 +16,7 @@ parameters:
   image:
     label: "이미지"
     type: string
-    default: hadoop-base-1
+    default: hadoop-base-3
   availability_zone:
     label: "가용구역"
     type: string
@@ -75,7 +75,7 @@ resources:
                   - { get_attr: [server3_port, fixed_ips, 0, ip_address] }
           template: |
             #!/bin/sh
-            echo "hadoop1 install start ....5"
+            echo "hadoop1 install start ......7"
             
             su - centos -c /opt/linux/agent-service start
             
@@ -144,34 +144,34 @@ resources:
             
             sudo -i -u centos bash << EOF
             
+            source ~/.bashrc
+            
             cd /home/centos/hadoop-install
             
-            echo "1111111111"
+            echo "master host setting"
             ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-local-env.yml \
             -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" \
             input_ansible_host="[master]\nhmaster\n[workers]\nhworker-1\nhworker-2" keyname="kepri-msa_default.pem"'
 
             sleep 3
     
-            echo "222222222"  
+            echo "key mapping and worker host setting"  
             ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-env.yml \
             -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" keyname="kepri-msa_default.pem"'
             
-            echo "3333333333" 
-            cat <<EOF> ~/hadoop/etc/hadoop/workers 
-            hworker-1
-            hworker-2
-            EOF
+            echo "worker node clustering" 
+            sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
+            sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
             
-            echo "hadoop namenode -format" 
-            hadoop namenode -format
             
-            echo "start-dfs" 
+            #ansible-playbook start_hadoop.yml
+       
+                        
+            hadoop namenode -format -force
+            
             /home/centos/hadoop/sbin/start-dfs.sh
             
-            echo "start-yarn" 
             /home/centos/hadoop/sbin/start-yarn.sh
-            
             
             EOF
                         
