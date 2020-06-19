@@ -67,16 +67,23 @@ scp -r ~/spark hworker-2:/home/centos/
 Spark start / stop
 
 ```
+#master node
 sbin/start-all.sh
+
+#slave node
 sbin/start-slave.sh 'spark://hmaster:7077'
 
+
+#master node
 sbin/stop-all.sh
+
+#slave node
 sbin/stop-slave.sh 'spark://hmaster:7077'
 
 ```
 
 web ui
-http://101.55.126.207:8080/
+http://hmaster:8080/
 
 test
 
