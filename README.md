@@ -10,7 +10,7 @@ node-1 http://hmaster:9864
 
 node-2 http://hmaster:9865
 
-jobhistory http://hmaster:19888
+jobhistory http://hmaster:19888 (?)
 
 
 #  spark 설치 확인
