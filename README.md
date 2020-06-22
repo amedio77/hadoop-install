@@ -30,8 +30,11 @@ jps 명령으로 확인하면 master 에서는 HMaster,HRegionServer worker 에�
 $ jps 
 32146 HMaster
 32306 HRegionServer
+...
 
 ## hworker
 $ jsp
 9103 HRegionServer
+...
+
 ```
