@@ -16,7 +16,7 @@ parameters:
   image:
     label: "이미지"
     type: string
-    default: hadoop-base-4
+    default: hadoop-base-5
   availability_zone:
     label: "가용구역"
     type: string
@@ -188,7 +188,6 @@ resources:
             
             echo "##### 03.zookeeper setting start ###########"
             
-            mkdir /home/centos/zookeeper/tmp
             sudo -- sh -c "dataDir=/home/centos/zookeeper/tmp >> /home/centos/zookeeper/conf/zoo.cfg"
             
             sudo -- sh -c "server.1=hmaster:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
@@ -202,8 +201,51 @@ resources:
             
             echo "##### 03.zookeeper setting end ###########"
           
+            echo "##### 04.hbase setting start ###########"
             
-
+            cat <<EOF> /home/centos/hbase/conf/hbase-site.xml
+            <?xml version="1.0"?>
+            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+            <configuration>
+                <property>
+                    <name>hbase.rootdir</name>
+                    <value>hdfs://hmaster:54310/hbase</value>
+                </property>
+                <property>
+                    <name>hbase.cluster.distributed</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>hbase.zookeeper.quorum</name>
+                    <value>hmaster,hworker-1,hworker-2</value>
+                </property>
+                <property>
+                    <name>dfs.replication</name>
+                    <value>3</value>
+                </property>
+                <property>
+                  <name>hbase.unsafe.stream.capability.enforce</name>
+                  <value>false</value>
+                </property>
+                <property>
+                    <name>hbase.zookeeper.property.clientPort</name>
+                    <value>2181</value> 
+                </property> 
+            </configuration>
+            EOF
+            
+            cat <<EOF> /home/centos/hbase/conf/regionservers
+            hmaster
+            hworker-1
+            hworker-2
+            EOF
+            
+            #hadoop dfsadmin -safemode leave
+            
+            ## hbase 실행 - master node 에서 실행
+            /home/centos/hbase/bin/start-hbase.sh
+            
+            echo "##### 04.hbase setting end ###########" 
             
             EOF #스크립트 끝
             
@@ -259,6 +301,17 @@ resources:
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
         
+
+            masterRun=1
+            while [[ masterRun -eq 1 ]]
+            do
+              echo "nc -z $master_address 7077"
+              nc -z $master_address 7077
+              masterRun=$?
+              sleep 5
+            done
+            echo "master node active"
+        
             sudo -i -u centos bash << EOF
             source ~/.bashrc
             
@@ -274,6 +327,7 @@ resources:
             echo "##### 03.zookeeper setting start ###########"
             
             mkdir /home/centos/zookeeper/tmp
+            
             sudo -- sh -c "dataDir=/home/centos/zookeeper/tmp >> /home/centos/zookeeper/conf/zoo.cfg"
             
             sudo -- sh -c "server.1=hmaster:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
@@ -286,6 +340,50 @@ resources:
             /home/centos/zookeeper/bin/zkServer.sh start
             
             echo "##### 03.zookeeper setting end ###########"
+
+            echo "##### 04.hbase setting start ###########"
+            
+            cat <<EOF> /home/centos/hbase/conf/hbase-site.xml
+            <?xml version="1.0"?>
+            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+            <configuration>
+                <property>
+                    <name>hbase.rootdir</name>
+                    <value>hdfs://hmaster:54310/hbase</value>
+                </property>
+                <property>
+                    <name>hbase.cluster.distributed</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>hbase.zookeeper.quorum</name>
+                    <value>hmaster,hworker-1,hworker-2</value>
+                </property>
+                <property>
+                    <name>dfs.replication</name>
+                    <value>3</value>
+                </property>
+                <property>
+                  <name>hbase.unsafe.stream.capability.enforce</name>
+                  <value>false</value>
+                </property>
+                <property>
+                    <name>hbase.zookeeper.property.clientPort</name>
+                    <value>2181</value> 
+                </property> 
+            </configuration>
+            EOF
+            
+            cat <<EOF> /home/centos/hbase/conf/regionservers
+            hmaster
+            hworker-1
+            hworker-2
+            EOF
+            
+            hadoop dfsadmin -safemode leave
+            
+            echo "##### 04.hbase setting end ###########"             
+            
             
             EOF #스크립트 끝
 
@@ -340,6 +438,15 @@ resources:
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
             
+            masterRun=1
+            while [[ masterRun -eq 1 ]]
+            do
+              echo "nc -z $master_address 7077"
+              nc -z $master_address 7077
+              masterRun=$?
+              sleep 5
+            done
+            echo "master node active"          
            
             sudo -i -u centos bash << EOF
             source ~/.bashrc
@@ -355,7 +462,6 @@ resources:
             
             echo "##### 03.zookeeper setting start ###########"
             
-            mkdir /home/centos/zookeeper/tmp
             sudo -- sh -c "dataDir=/home/centos/zookeeper/tmp >> /home/centos/zookeeper/conf/zoo.cfg"
             
             sudo -- sh -c "server.1=hmaster:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
@@ -369,7 +475,51 @@ resources:
             
             echo "##### 03.zookeeper setting end ###########"
             
-            EOF #스크립트 끝
+            echo "##### 04.hbase setting start ###########"
+            
+            cat <<EOF> /home/centos/hbase/conf/hbase-site.xml
+            <?xml version="1.0"?>
+            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+            <configuration>
+                <property>
+                    <name>hbase.rootdir</name>
+                    <value>hdfs://hmaster:54310/hbase</value>
+                </property>
+                <property>
+                    <name>hbase.cluster.distributed</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>hbase.zookeeper.quorum</name>
+                    <value>hmaster,hworker-1,hworker-2</value>
+                </property>
+                <property>
+                    <name>dfs.replication</name>
+                    <value>3</value>
+                </property>
+                <property>
+                  <name>hbase.unsafe.stream.capability.enforce</name>
+                  <value>false</value>
+                </property>
+                <property>
+                    <name>hbase.zookeeper.property.clientPort</name>
+                    <value>2181</value> 
+                </property> 
+            </configuration>
+            EOF
+            
+            cat <<EOF> /home/centos/hbase/conf/regionservers
+            hmaster
+            hworker-1
+            hworker-2
+            EOF
+            
+            hadoop dfsadmin -safemode leave
+
+            
+            echo "##### 04.hbase setting end ###########" 
+            
+            EOF 
             
             
   server1:
