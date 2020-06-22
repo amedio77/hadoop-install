@@ -3,15 +3,15 @@ hadoop-install 설치 확인
 
 - hadoop 설치 및 클러스터 확인
 
-admin http://101.55.126.207:9870
+admin http://hmaster:9870
 
-yarn http://101.55.126.207:8088
+yarn http://hmaster:8088
 
-node-1 http://101.55.126.207:9864
+node-1 http://hmaster:9864
 
-node-2 http://101.55.126.207:9865
+node-2 http://hmaster:9865
 
-jobhistory http://101.55.126.207:19888
+jobhistory http://hmaster:19888
 
 
 - spark 설치 확인
