@@ -1,4 +1,4 @@
-##hadoop-install
+## hadoop-install
 
 # hadoop 설치 및 클러스터 확인
 
