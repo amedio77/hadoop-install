@@ -52,6 +52,12 @@ cp -rp ./log4j.properties.template ./log4j.properties
 
 vi log4j.properties
 
+5) WEBUI_PORT 를 8080 에서 변경한다 (zookeeper와 포트 : 8080 충돌방지 )
+
+vi ~/.bashrc
+
+export SPARK_MASTER_WEBUI_PORT=8089
+
 ```
 
 Spark 설정 worker node 에 복사
