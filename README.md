@@ -14,7 +14,7 @@ jobhistory http://hmaster:19888 (?)
 
 
 #  spark 설치 확인
-web ui http://hmaster:8080/
+web ui http://hmaster:8089/
 
 #  zookeeper 설치 확인
 각 서버의 주키퍼 데몬을 실행한다.
