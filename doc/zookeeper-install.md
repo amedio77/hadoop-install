@@ -56,8 +56,20 @@ cd ~/zookeeper
 
 bin/zkServer.sh start
 
+## 2181, 3888 포트 확인
+$ netstat -naltop | grep -i listen
+tcp6       0      0 :::2181                 
+tcp6       0      0 100.216.232.165:3888   
 
-##확인
+
+## 확인
 bin/zkCli.sh -server 127.0.0.1:2181
+
+WATCHER::
+
+WatchedEvent state:SyncConnected type:None path:null
+[zk: 127.0.0.1:2181(CONNECTED) 0]
+
+
 
 ```
