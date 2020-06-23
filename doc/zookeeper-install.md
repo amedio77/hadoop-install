@@ -2,7 +2,8 @@ zookeeper install
 
 http://develop.sunshiny.co.kr/886
 https://blog.naver.com/melomelo11/221362806126
-https://cafe.naver.com/hadoopkr/57 --> 가장 자세함
+https://cafe.naver.com/hadoopkr/57 
+https://mslee89.tistory.com/188 --> 가장 자세함
 
 ```
 ##https://zookeeper.apache.org/index.html
