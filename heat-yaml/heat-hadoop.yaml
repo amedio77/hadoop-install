@@ -16,7 +16,7 @@ parameters:
   image:
     label: "이미지"
     type: string
-    default: hadoop-base-5
+    default: hadoop-base-6
   availability_zone:
     label: "가용구역"
     type: string
@@ -77,8 +77,6 @@ resources:
             #!/bin/sh
             echo "01.hadoop core install start ......7"
             
-            su - centos -c /opt/linux/agent-service start
-            
             cat <<EOF> /home/centos/.ssh/kepri-msa_default.pem 
             -----BEGIN RSA PRIVATE KEY-----
             MIIEowIBAAKCAQEAtCxfOF2as6oxUTYRS76Ecj2ZKjMEJlBKnTIrcoGADygJP2jL
@@ -110,7 +108,6 @@ resources:
             EOF
             
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
-            
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
             
             echo "address1=$master_address"
@@ -140,114 +137,50 @@ resources:
             done
             echo "node2 active"
             
-            echo "host setting start"
-            
+            echo "##### 01.hadoop core setting start ###########"
             sudo -i -u centos bash << EOF
-            
             source ~/.bashrc
-            
             cd /home/centos/hadoop-install
-            
-            echo "master host setting"
+            echo "[01]master host setting"
             ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-local-env.yml \
             -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" \
             input_ansible_host="[master]\nhmaster\n[workers]\nhworker-1\nhworker-2" keyname="kepri-msa_default.pem"'
-
             sleep 3
-    
-            echo "key mapping and worker host setting"  
+            echo "[02]key mapping and worker host setting"  
             ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-env.yml \
             -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" keyname="kepri-msa_default.pem"'
-            
-            echo "worker node clustering" 
+            echo "[03]worker node clustering" 
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
             sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
-            
-            
-            #ansible-playbook start_hadoop.yml
-       
-                        
+            echo "[04]hadoop namenode -format" 
             hadoop namenode -format -force
-            
+            echo "[05]hadoop start-dfs"
             /home/centos/hadoop/sbin/start-dfs.sh
-            
+            echo "[03]hadoop start-yarn"
             /home/centos/hadoop/sbin/start-yarn.sh
-            
-            
-                        
             echo "##### 01.hadoop core setting end ###########"
-            
+            EOF 
+
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             echo "##### 02.spark setting start ###########"
-            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
-            
             /home/centos/spark/sbin/start-master.sh
-            
             echo "##### 02.spark setting end ###########"
-            
             echo "##### 03.zookeeper setting start ###########"
-            
-            sudo -- sh -c "dataDir=/home/centos/zookeeper/tmp >> /home/centos/zookeeper/conf/zoo.cfg"
-            
-            sudo -- sh -c "server.1=hmaster:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            sudo -- sh -c "server.2=hworker-1:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            sudo -- sh -c "server.3=hworker-2:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            
-            ## 노드1->1, 노드2->2, 노드3->:3 값을 myid 파일에 넣어준다.
+            cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
+            dataDir=/home/centos/zookeeper/tmp
+            server.1=hmaster:2888:3888
+            server.2=hworker-1:2888:3888
+            server.3=hworker-2:2888:388
+            EOF
+            echo "===> user name::$USER"
             echo "1" > /home/centos/zookeeper/tmp/myid 
-             
+            chown centos:centos /home/centos/zookeeper/tmp/myid
             /home/centos/zookeeper/bin/zkServer.sh start
-            
             echo "##### 03.zookeeper setting end ###########"
-          
-            echo "##### 04.hbase setting start ###########"
-            
-            cat <<EOF> /home/centos/hbase/conf/hbase-site.xml
-            <?xml version="1.0"?>
-            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-            <configuration>
-                <property>
-                    <name>hbase.rootdir</name>
-                    <value>hdfs://hmaster:54310/hbase</value>
-                </property>
-                <property>
-                    <name>hbase.cluster.distributed</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>hbase.zookeeper.quorum</name>
-                    <value>hmaster,hworker-1,hworker-2</value>
-                </property>
-                <property>
-                    <name>dfs.replication</name>
-                    <value>3</value>
-                </property>
-                <property>
-                  <name>hbase.unsafe.stream.capability.enforce</name>
-                  <value>false</value>
-                </property>
-                <property>
-                    <name>hbase.zookeeper.property.clientPort</name>
-                    <value>2181</value> 
-                </property> 
-            </configuration>
-            EOF
-            
-            cat <<EOF> /home/centos/hbase/conf/regionservers
-            hmaster
-            hworker-1
-            hworker-2
-            EOF
-            
-            #hadoop dfsadmin -safemode leave
-            
-            ## hbase 실행 - master node 에서 실행
-            /home/centos/hbase/bin/start-hbase.sh
-            
-            echo "##### 04.hbase setting end ###########" 
-            
-            EOF #스크립트 끝
+            EOF 
             
   init_config2:
     type: OS::Heat::SoftwareConfig
@@ -257,7 +190,9 @@ resources:
         str_replace:
           params:
             $root_password: { get_param: root_password }
-            $node_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $master_address: { get_attr: [server1_port, fixed_ips, 0, ip_address] }
+            $node1_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $node2_address: { get_attr: [server3_port, fixed_ips, 0, ip_address] }
             $server_addresses:
               list_join:
                 - ','
@@ -298,10 +233,12 @@ resources:
             YzIkI7s0BHathDIoiwSGtcdJMosbh+kZRIE3jjIejtdaVd5IQU/A
             -----END RSA PRIVATE KEY-----
             EOF
+            
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
         
-
+            yum -y install nc
+            
             masterRun=1
             while [[ masterRun -eq 1 ]]
             do
@@ -314,78 +251,23 @@ resources:
         
             sudo -i -u centos bash << EOF
             source ~/.bashrc
-            
             echo "##### 02.spark setting start ###########"
-            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
-                        
             /home/centos/spark/sbin/start-slave.sh 'spark://hmaster:7077'
-                        
             echo "##### 02.spark setting end ###########"
-            
             echo "##### 03.zookeeper setting start ###########"
-            
             mkdir /home/centos/zookeeper/tmp
-            
-            sudo -- sh -c "dataDir=/home/centos/zookeeper/tmp >> /home/centos/zookeeper/conf/zoo.cfg"
-            
-            sudo -- sh -c "server.1=hmaster:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            sudo -- sh -c "server.2=hworker-1:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            sudo -- sh -c "server.3=hworker-2:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            
-            ## 노드1->1, 노드2->2, 노드3->:3 값을 myid 파일에 넣어준다.
+            cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
+            dataDir=/home/centos/zookeeper/tmp
+            server.1=hmaster:2888:3888
+            server.2=hworker-1:2888:3888
+            server.3=hworker-2:2888:388
+            EOF
             echo "2" > /home/centos/zookeeper/tmp/myid 
-             
             /home/centos/zookeeper/bin/zkServer.sh start
-            
             echo "##### 03.zookeeper setting end ###########"
-
-            echo "##### 04.hbase setting start ###########"
-            
-            cat <<EOF> /home/centos/hbase/conf/hbase-site.xml
-            <?xml version="1.0"?>
-            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-            <configuration>
-                <property>
-                    <name>hbase.rootdir</name>
-                    <value>hdfs://hmaster:54310/hbase</value>
-                </property>
-                <property>
-                    <name>hbase.cluster.distributed</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>hbase.zookeeper.quorum</name>
-                    <value>hmaster,hworker-1,hworker-2</value>
-                </property>
-                <property>
-                    <name>dfs.replication</name>
-                    <value>3</value>
-                </property>
-                <property>
-                  <name>hbase.unsafe.stream.capability.enforce</name>
-                  <value>false</value>
-                </property>
-                <property>
-                    <name>hbase.zookeeper.property.clientPort</name>
-                    <value>2181</value> 
-                </property> 
-            </configuration>
-            EOF
-            
-            cat <<EOF> /home/centos/hbase/conf/regionservers
-            hmaster
-            hworker-1
-            hworker-2
-            EOF
-            
-            hadoop dfsadmin -safemode leave
-            
-            echo "##### 04.hbase setting end ###########"             
-            
-            
-            EOF #스크립트 끝
+            EOF 
 
   init_config3:
     type: OS::Heat::SoftwareConfig
@@ -395,7 +277,9 @@ resources:
         str_replace:
           params:
             $root_password: { get_param: root_password }
-            $node_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $master_address: { get_attr: [server1_port, fixed_ips, 0, ip_address] }
+            $node1_address: { get_attr: [server2_port, fixed_ips, 0, ip_address] }
+            $node2_address: { get_attr: [server3_port, fixed_ips, 0, ip_address] }
             $server_addresses:
               list_join:
                 - ','
@@ -438,6 +322,8 @@ resources:
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
             
+            yum -y install nc
+            
             masterRun=1
             while [[ masterRun -eq 1 ]]
             do
@@ -450,76 +336,23 @@ resources:
            
             sudo -i -u centos bash << EOF
             source ~/.bashrc
-            
             echo "##### 02.spark setting start ###########"
-            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
-            
             /home/centos/spark/sbin/start-slave.sh 'spark://hmaster:7077'
-                        
             echo "##### 02.spark setting end ###########"
-            
             echo "##### 03.zookeeper setting start ###########"
-            
-            sudo -- sh -c "dataDir=/home/centos/zookeeper/tmp >> /home/centos/zookeeper/conf/zoo.cfg"
-            
-            sudo -- sh -c "server.1=hmaster:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            sudo -- sh -c "server.2=hworker-1:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            sudo -- sh -c "server.3=hworker-2:2888:3888 >> /home/centos/zookeeper/conf/zoo.cfg"
-            
-            ## 노드1->1, 노드2->2, 노드3->:3 값을 myid 파일에 넣어준다.
-            echo "2" > /home/centos/zookeeper/tmp/myid 
-             
+            cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
+            dataDir=/home/centos/zookeeper/tmp
+            server.1=hmaster:2888:3888
+            server.2=hworker-1:2888:3888
+            server.3=hworker-2:2888:388
+            EOF
+            echo "3" > /home/centos/zookeeper/tmp/myid 
+            chown centos:centos /home/centos/zookeeper/tmp/myid
             /home/centos/zookeeper/bin/zkServer.sh start
-            
             echo "##### 03.zookeeper setting end ###########"
-            
-            echo "##### 04.hbase setting start ###########"
-            
-            cat <<EOF> /home/centos/hbase/conf/hbase-site.xml
-            <?xml version="1.0"?>
-            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-            <configuration>
-                <property>
-                    <name>hbase.rootdir</name>
-                    <value>hdfs://hmaster:54310/hbase</value>
-                </property>
-                <property>
-                    <name>hbase.cluster.distributed</name>
-                    <value>true</value>
-                </property>
-                <property>
-                    <name>hbase.zookeeper.quorum</name>
-                    <value>hmaster,hworker-1,hworker-2</value>
-                </property>
-                <property>
-                    <name>dfs.replication</name>
-                    <value>3</value>
-                </property>
-                <property>
-                  <name>hbase.unsafe.stream.capability.enforce</name>
-                  <value>false</value>
-                </property>
-                <property>
-                    <name>hbase.zookeeper.property.clientPort</name>
-                    <value>2181</value> 
-                </property> 
-            </configuration>
             EOF
-            
-            cat <<EOF> /home/centos/hbase/conf/regionservers
-            hmaster
-            hworker-1
-            hworker-2
-            EOF
-            
-            hadoop dfsadmin -safemode leave
-
-            
-            echo "##### 04.hbase setting end ###########" 
-            
-            EOF 
             
             
   server1:
