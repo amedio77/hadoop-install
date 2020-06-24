@@ -188,8 +188,17 @@ resources:
             EOF
             
             
-            echo "##### 04.hbase setting start ###########"
+            masterRun=1
+            while [[ masterRun -eq 1 ]]
+            do
+              echo "nc -z $node2_address 3888"
+              nc -z $node2_address 3888
+              masterRun=$?
+              sleep 5
+            done
+            echo "zookeeper node2 active"
             
+            echo "##### 04.hbase setting start ###########"
             VAR1=$(cat <<EOF
             <?xml version="1.0"?>
             <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
