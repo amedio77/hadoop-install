@@ -16,7 +16,7 @@ parameters:
   image:
     label: "이미지"
     type: string
-    default: hadoop-base-7
+    default: hadoop-base-8
   availability_zone:
     label: "가용구역"
     type: string
@@ -114,7 +114,7 @@ resources:
             echo "address2=$node1_address"
             echo "address3=$node2_address"
             
-            yum -y install nc
+            #yum -y install nc
             
             masterRun=1
             while [[ masterRun -eq 1 ]]
@@ -149,7 +149,8 @@ resources:
             echo "[02]key mapping and worker host setting"  
             ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-env.yml \
             -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" keyname="kepri-msa_default.pem"'
-            echo "[03]worker node clustering" 
+            echo "[03]hadoop node clustering" 
+            sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/masters"
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
             sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
             echo "[04]hadoop namenode -format" 
@@ -173,16 +174,20 @@ resources:
             dataDir=/home/centos/zookeeper/tmp
             server.1=hmaster:2888:3888
             server.2=hworker-1:2888:3888
-            server.3=hworker-2:2888:388
+            server.3=hworker-2:2888:3888
             EOF
             echo "1" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
-            /home/centos/zookeeper/bin/zkServer.sh start
-            echo "##### 03.zookeeper setting end ###########"
+            chmod 777 /home/centos/zookeeper/tmp/myid
             EOF 
-            
+                        
             sudo -i -u centos bash << EOF
             source ~/.bashrc
+            /home/centos/zookeeper/bin/zkServer.sh start
+            echo "##### 03.zookeeper setting end ###########"
+            EOF
+            
+            
             echo "##### 04.hbase setting start ###########"
             
             VAR1=$(cat <<EOF
@@ -191,7 +196,7 @@ resources:
             <configuration>
                 <property>
                     <name>hbase.rootdir</name>
-                    <value>hdfs://hmaster:54310/hbase</value>
+                    <value>hdfs://hmaster:9000/hbase</value>
                 </property>
                 <property>
                     <name>hbase.cluster.distributed</name>
@@ -221,17 +226,23 @@ resources:
             ${VAR1}
             EOF
             
+            chown centos:centos /home/centos/hbase/conf/hbase-site.xml
+            
             cat <<EOF> /home/centos/hbase/conf/regionservers
             hmaster
             hworker-1
             hworker-2
             EOF
             
+            chown centos:centos /home/centos/hbase/conf/regionservers
+            
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             hadoop dfsadmin -safemode leave
-            ## hbase start
             /home/centos/hbase/bin/start-hbase.sh
-            echo "##### 04.hbase setting end ###########"
-            EOF             
+            EOF
+            
+            echo "##### 04.hbase setting end ###########"             
             
   init_config2:
     type: OS::Heat::SoftwareConfig
@@ -288,7 +299,8 @@ resources:
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
         
-            yum -y install nc
+            echo "##### 02.spark setting start ###########"
+            #yum -y install nc
             
             masterRun=1
             while [[ masterRun -eq 1 ]]
@@ -302,7 +314,7 @@ resources:
         
             sudo -i -u centos bash << EOF
             source ~/.bashrc
-            echo "##### 02.spark setting start ###########"
+            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
             /home/centos/spark/sbin/start-slave.sh 'spark://hmaster:7077'
@@ -313,13 +325,18 @@ resources:
             dataDir=/home/centos/zookeeper/tmp
             server.1=hmaster:2888:3888
             server.2=hworker-1:2888:3888
-            server.3=hworker-2:2888:388
+            server.3=hworker-2:2888:3888
             EOF
             echo "2" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
+            chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF 
+                        
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             /home/centos/zookeeper/bin/zkServer.sh start
             echo "##### 03.zookeeper setting end ###########"
-            EOF 
+            EOF
 
             sudo -i -u centos bash << EOF
             source ~/.bashrc
@@ -330,7 +347,7 @@ resources:
             <configuration>
                 <property>
                     <name>hbase.rootdir</name>
-                    <value>hdfs://hmaster:54310/hbase</value>
+                    <value>hdfs://hmaster:9000/hbase</value>
                 </property>
                 <property>
                     <name>hbase.cluster.distributed</name>
@@ -416,7 +433,8 @@ resources:
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
             
-            yum -y install nc
+            echo "##### 02.spark setting start ###########"
+            #yum -y install nc
             
             masterRun=1
             while [[ masterRun -eq 1 ]]
@@ -430,20 +448,26 @@ resources:
            
             sudo -i -u centos bash << EOF
             source ~/.bashrc
-            echo "##### 02.spark setting start ###########"
+            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
             /home/centos/spark/sbin/start-slave.sh 'spark://hmaster:7077'
             echo "##### 02.spark setting end ###########"
             echo "##### 03.zookeeper setting start ###########"
+            mkdir /home/centos/zookeeper/tmp
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
             dataDir=/home/centos/zookeeper/tmp
             server.1=hmaster:2888:3888
             server.2=hworker-1:2888:3888
-            server.3=hworker-2:2888:388
+            server.3=hworker-2:2888:3888
             EOF
             echo "3" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
+            chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF 
+                        
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             /home/centos/zookeeper/bin/zkServer.sh start
             echo "##### 03.zookeeper setting end ###########"
             EOF
@@ -457,7 +481,7 @@ resources:
             <configuration>
                 <property>
                     <name>hbase.rootdir</name>
-                    <value>hdfs://hmaster:54310/hbase</value>
+                    <value>hdfs://hmaster:9000/hbase</value>
                 </property>
                 <property>
                     <name>hbase.cluster.distributed</name>
