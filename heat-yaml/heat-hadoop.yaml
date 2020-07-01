@@ -175,7 +175,7 @@ resources:
             sudo -i -u centos bash << EOF
             source ~/.bashrc            
             echo "[03]hadoop node clustering" 
-            sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/masters"
+            #sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/masters"
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
             sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
             echo "[04]hadoop namenode -format" 
@@ -217,6 +217,15 @@ resources:
             echo "##### 03.zookeeper setting end ###########"
             EOF
             
+            masterRun=1
+            while [[ masterRun -eq 1 ]]
+            do
+              echo "nc -z $node1_address 3888"
+              nc -z $node1_address 3888
+              masterRun=$?
+              sleep 5
+            done
+            echo "zookeeper node1 active"
             
             masterRun=1
             while [[ masterRun -eq 1 ]]
@@ -274,6 +283,12 @@ resources:
             EOF
             
             chown centos:centos /home/centos/hbase/conf/regionservers
+            
+            cat <<EOF>> /home/centos/hbase/conf/hbase-env.sh
+            export HBASE_MANAGES_ZK=false
+            export HBASE_PID_DIR=/home/centos/hbase/pid
+            EOF
+            
             
             sudo -i -u centos bash << EOF
             source ~/.bashrc
@@ -372,8 +387,6 @@ resources:
             cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-1  "cat - >> /home/centos/.ssh/authorized_keys"
             cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-2  "cat - >> /home/centos/.ssh/authorized_keys"
             EOF
-
-
             
             echo "##### 02.spark setting start ###########"
             #yum -y install nc
@@ -456,6 +469,12 @@ resources:
             hworker-1
             hworker-2
             EOF
+            
+            cat <<EOF>> /home/centos/hbase/conf/hbase-env.sh
+            export HBASE_MANAGES_ZK=false
+            export HBASE_PID_DIR=/home/centos/hbase/pid
+            EOF
+            
             echo "##### 04.hbase setting end ###########"   
             EOF 
 
@@ -627,6 +646,12 @@ resources:
             hworker-1
             hworker-2
             EOF
+            
+            cat <<EOF>> /home/centos/hbase/conf/hbase-env.sh
+            export HBASE_MANAGES_ZK=false
+            export HBASE_PID_DIR=/home/centos/hbase/pid
+            EOF
+            
             echo "##### 04.hbase setting end ###########"   
             EOF 
             
