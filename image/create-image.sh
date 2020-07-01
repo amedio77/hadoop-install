@@ -44,3 +44,26 @@ chmod 7055 ~/hadoop/pids
 chmod 7055 ~/hadoop/etc/hadoop/dfs/data
 chmod 7055 ~/hadoop/etc/hadoop/dfs/name
 
+cd ~
+
+# spark 설치 파일 다운로드
+wget http://mirror.navercorp.com/apache/spark/spark-3.0.0-preview2/spark-3.0.0-preview2-bin-hadoop3.2.tgz
+tar -xvzf spark-3.0.0-preview2-bin-hadoop3.2.tgz
+mv spark-3.0.0-preview2-bin-hadoop3.2/ spark/
+
+# zookeeper 설치 파일 다운로드
+wget http://archive.apache.org/dist/zookeeper/zookeeper-3.6.1/apache-zookeeper-3.6.1-bin.tar.gz
+tar -xvzf apache-zookeeper-3.6.1-bin.tar.gz
+mv apache-zookeeper-3.6.1-bin zookeeper
+
+# hbase 설치 파일 다운로드
+wget http://mirror.navercorp.com/apache/hbase/stable/hbase-2.2.4-bin.tar.gz
+tar -xvzf hbase-2.2.4-bin.tar.gz
+mv hbase-2.2.4 hbase
+
+# hive 설치 파일 다운로드
+wget http://mirror.navercorp.com/apache/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz
+tar zxvf ./apa*
+mv ./apache-hive-3.1.2-bin ./hive
+
+
