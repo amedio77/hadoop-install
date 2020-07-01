@@ -175,8 +175,7 @@ resources:
             sudo -i -u centos bash << EOF
             source ~/.bashrc            
             echo "[03]hadoop node clustering" 
-            #sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/masters"
-            sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
+            sudo -- sh -c "echo hworker-1 > /home/centos/hadoop/etc/hadoop/workers"
             sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
             echo "[04]hadoop namenode -format" 
             hadoop namenode -format -force            
