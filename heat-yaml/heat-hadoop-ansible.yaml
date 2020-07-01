@@ -16,7 +16,7 @@ parameters:
   image:
     label: "이미지"
     type: string
-    default: CentOS-7-x86_64-Heat-1907-Hadoop.qcow2
+    default: hadoop-base-8
   availability_zone:
     label: "가용구역"
     type: string
@@ -125,7 +125,8 @@ resources:
               sleep 5
             done
             echo "node1 active"
-                        
+            
+            
             masterRun=1
             while [[ masterRun -eq 1 ]]
             do
@@ -135,45 +136,25 @@ resources:
               sleep 5
             done
             echo "node2 active"
-
+            
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             echo "##### 01.hadoop core setting start ###########"
-            echo "[01] host setting"
-            echo "##### 01.1 host file setting ###########"
-            cat <<EOF>> /etc/hosts
-            $master_address hmaster
-            $node1_address hworker-1
-            $node2_address hworker-2
-            EOF
-            
+            cd /home/centos/hadoop-install
+            echo "[01]master host setting"
+            ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-local-env.yml \
+            -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" \
+            input_ansible_host="[master]\nhmaster\n[workers]\nhworker-1\nhworker-2" keyname="kepri-msa_default.pem"'
             sleep 3
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
-            echo "##### 01.2 add_known_hosts ###########"
-            ssh-keyscan -H hmaster,$master_addres >> /home/centos/.ssh/known_hosts
-            ssh-keyscan -H hworker-1,$node1_address >> /home/centos/.ssh/known_hosts
-            ssh-keyscan -H hworker-2,$node2_address >> /home/centos/.ssh/known_hosts
-            EOF
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
-            echo "##### 01.3 add_authorized_keys ###########"
-            ssh-keygen -b 2048 -t rsa -f /home/centos/.ssh/id_rsa -q -N ''
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hmaster  "cat - >> /home/centos/.ssh/authorized_keys"
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-1  "cat - >> /home/centos/.ssh/authorized_keys"
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-2  "cat - >> /home/centos/.ssh/authorized_keys"
-            EOF
-                        
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc            
+            echo "[02]key mapping and worker host setting"  
+            ansible-playbook --private-key /home/centos/.ssh/kepri-msa_default.pem host-env.yml \
+            -e 'input_host="$master_address hmaster\n$node1_address hworker-1\n$node2_address hworker-2" keyname="kepri-msa_default.pem"'
             echo "[03]hadoop node clustering" 
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/masters"
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
             sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
-            
             echo "[04]hadoop namenode -format" 
             hadoop namenode -format -force
-            
             echo "[05]hadoop start-dfs"
             /home/centos/hadoop/sbin/start-dfs.sh
             echo "[06]hadoop start-yarn"
@@ -188,10 +169,6 @@ resources:
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
             /home/centos/spark/sbin/start-master.sh
             echo "##### 02.spark setting end ###########"
-            EOF
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
             echo "##### 03.zookeeper setting start ###########"
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
             dataDir=/home/centos/zookeeper/tmp
@@ -202,6 +179,10 @@ resources:
             echo "1" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
             chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF 
+                        
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             /home/centos/zookeeper/bin/zkServer.sh start
             echo "##### 03.zookeeper setting end ###########"
             EOF
@@ -326,34 +307,6 @@ resources:
             
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
-            
-            echo "[01] host setting"
-            echo "##### 01.1 host file setting ###########"
-            cat <<EOF>> /etc/hosts
-            $master_address hmaster
-            $node1_address hworker-1
-            $node2_address hworker-2
-            EOF
-            
-            sleep 3
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
-            echo "##### 01.2 add_known_hosts ###########"
-            ssh-keyscan -H hmaster,$master_addres >> /home/centos/.ssh/known_hosts
-            ssh-keyscan -H hworker-1,$node1_address >> /home/centos/.ssh/known_hosts
-            ssh-keyscan -H hworker-2,$node2_address >> /home/centos/.ssh/known_hosts
-            EOF
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
-            echo "##### 01.3 add_authorized_keys ###########"
-            ssh-keygen -b 2048 -t rsa -f /home/centos/.ssh/id_rsa -q -N ''
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hmaster  "cat - >> /home/centos/.ssh/authorized_keys"
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-1  "cat - >> /home/centos/.ssh/authorized_keys"
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-2  "cat - >> /home/centos/.ssh/authorized_keys"
-            EOF
-
         
             echo "##### 02.spark setting start ###########"
             #yum -y install nc
@@ -370,14 +323,11 @@ resources:
         
             sudo -i -u centos bash << EOF
             source ~/.bashrc
+            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
             /home/centos/spark/sbin/start-slave.sh 'spark://hmaster:7077'
             echo "##### 02.spark setting end ###########"
-            EOF
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
             echo "##### 03.zookeeper setting start ###########"
             mkdir /home/centos/zookeeper/tmp
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
@@ -389,6 +339,10 @@ resources:
             echo "2" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
             chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF 
+                        
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
             /home/centos/zookeeper/bin/zkServer.sh start
             echo "##### 03.zookeeper setting end ###########"
             EOF
@@ -488,33 +442,6 @@ resources:
             chown centos.centos /home/centos/.ssh/kepri-msa_default.pem
             chmod 600 /home/centos/.ssh/kepri-msa_default.pem
             
-            echo "[01] host setting"
-            echo "##### 01.1 host file setting ###########"
-            cat <<EOF>> /etc/hosts
-            $master_address hmaster
-            $node1_address hworker-1
-            $node2_address hworker-2
-            EOF
-            
-            sleep 3
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
-            echo "##### 01.2 add_known_hosts ###########"
-            ssh-keyscan -H hmaster,$master_addres >> /home/centos/.ssh/known_hosts
-            ssh-keyscan -H hworker-1,$node1_address >> /home/centos/.ssh/known_hosts
-            ssh-keyscan -H hworker-2,$node2_address >> /home/centos/.ssh/known_hosts
-            EOF
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc
-            echo "##### 01.3 add_authorized_keys ###########"
-            ssh-keygen -b 2048 -t rsa -f /home/centos/.ssh/id_rsa -q -N ''
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hmaster  "cat - >> /home/centos/.ssh/authorized_keys"
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-1  "cat - >> /home/centos/.ssh/authorized_keys"
-            cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-2  "cat - >> /home/centos/.ssh/authorized_keys"
-            EOF            
-            
             echo "##### 02.spark setting start ###########"
             #yum -y install nc
             
@@ -530,14 +457,11 @@ resources:
            
             sudo -i -u centos bash << EOF
             source ~/.bashrc
+            
             sudo -- sh -c "echo hworker-1 >> /home/centos/spark/conf/slaves"
             sudo -- sh -c "echo hworker-2 >> /home/centos/spark/conf/slaves"
             /home/centos/spark/sbin/start-slave.sh 'spark://hmaster:7077'
             echo "##### 02.spark setting end ###########"
-            EOF
-            
-            sudo -i -u centos bash << EOF
-            source ~/.bashrc            
             echo "##### 03.zookeeper setting start ###########"
             mkdir /home/centos/zookeeper/tmp
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
@@ -549,6 +473,8 @@ resources:
             echo "3" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
             chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF 
+                        
             sudo -i -u centos bash << EOF
             source ~/.bashrc
             /home/centos/zookeeper/bin/zkServer.sh start
