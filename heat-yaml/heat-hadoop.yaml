@@ -145,7 +145,15 @@ resources:
             $node2_address hworker-2
             EOF
             
-            sleep 3
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
+            mkdir -p /home/centos/hadoop/pids
+            mkdir -p /home/centos/hadoop/etc/hadoop/dfs/data
+            mkdir -p /home/centos/hadoop/etc/hadoop/dfs/name
+            sudo chmod 755 /home/centos/hadoop/pids
+            sudo chmod 755 /home/centos/hadoop/etc/hadoop/dfs/data
+            sudo chmod 755 /home/centos/hadoop/etc/hadoop/dfs/name 
+            EOF
             
             sudo -i -u centos bash << EOF
             source ~/.bashrc
@@ -170,10 +178,8 @@ resources:
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/masters"
             sudo -- sh -c "echo hworker-1 >> /home/centos/hadoop/etc/hadoop/workers"
             sudo -- sh -c "echo hworker-2 >> /home/centos/hadoop/etc/hadoop/workers"
-            
             echo "[04]hadoop namenode -format" 
-            hadoop namenode -format -force
-            
+            hadoop namenode -format -force            
             echo "[05]hadoop start-dfs"
             /home/centos/hadoop/sbin/start-dfs.sh
             echo "[06]hadoop start-yarn"
@@ -193,6 +199,8 @@ resources:
             sudo -i -u centos bash << EOF
             source ~/.bashrc
             echo "##### 03.zookeeper setting start ###########"
+            mkdir /home/centos/zookeeper/tmp
+            cp /home/centos/zookeeper/conf/zoo_sample.cfg /home/centos/zookeeper/conf/zoo.cfg
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
             dataDir=/home/centos/zookeeper/tmp
             server.1=hmaster:2888:3888
@@ -202,6 +210,9 @@ resources:
             echo "1" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
             chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc            
             /home/centos/zookeeper/bin/zkServer.sh start
             echo "##### 03.zookeeper setting end ###########"
             EOF
@@ -335,7 +346,15 @@ resources:
             $node2_address hworker-2
             EOF
             
-            sleep 3
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
+            mkdir -p /home/centos/hadoop/pids
+            mkdir -p /home/centos/hadoop/etc/hadoop/dfs/data
+            mkdir -p /home/centos/hadoop/etc/hadoop/dfs/name
+            sudo chmod 755 /home/centos/hadoop/pids
+            sudo chmod 755 /home/centos/hadoop/etc/hadoop/dfs/data
+            sudo chmod 755 /home/centos/hadoop/etc/hadoop/dfs/name 
+            EOF
             
             sudo -i -u centos bash << EOF
             source ~/.bashrc
@@ -354,7 +373,8 @@ resources:
             cat /home/centos/.ssh/id_rsa.pub | ssh -i "/home/centos/.ssh/kepri-msa_default.pem" centos@hworker-2  "cat - >> /home/centos/.ssh/authorized_keys"
             EOF
 
-        
+
+            
             echo "##### 02.spark setting start ###########"
             #yum -y install nc
             
@@ -380,6 +400,7 @@ resources:
             source ~/.bashrc
             echo "##### 03.zookeeper setting start ###########"
             mkdir /home/centos/zookeeper/tmp
+            cp /home/centos/zookeeper/conf/zoo_sample.cfg /home/centos/zookeeper/conf/zoo.cfg
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
             dataDir=/home/centos/zookeeper/tmp
             server.1=hmaster:2888:3888
@@ -389,6 +410,9 @@ resources:
             echo "2" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
             chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc            
             /home/centos/zookeeper/bin/zkServer.sh start
             echo "##### 03.zookeeper setting end ###########"
             EOF
@@ -496,7 +520,15 @@ resources:
             $node2_address hworker-2
             EOF
             
-            sleep 3
+            sudo -i -u centos bash << EOF
+            source ~/.bashrc
+            mkdir -p /home/centos/hadoop/pids
+            mkdir -p /home/centos/hadoop/etc/hadoop/dfs/data
+            mkdir -p /home/centos/hadoop/etc/hadoop/dfs/name
+            sudo chmod 755 /home/centos/hadoop/pids
+            sudo chmod 755 /home/centos/hadoop/etc/hadoop/dfs/data
+            sudo chmod 755 /home/centos/hadoop/etc/hadoop/dfs/name 
+            EOF
             
             sudo -i -u centos bash << EOF
             source ~/.bashrc
@@ -540,6 +572,7 @@ resources:
             source ~/.bashrc            
             echo "##### 03.zookeeper setting start ###########"
             mkdir /home/centos/zookeeper/tmp
+            cp /home/centos/zookeeper/conf/zoo_sample.cfg /home/centos/zookeeper/conf/zoo.cfg
             cat <<EOF>> /home/centos/zookeeper/conf/zoo.cfg
             dataDir=/home/centos/zookeeper/tmp
             server.1=hmaster:2888:3888
@@ -549,6 +582,7 @@ resources:
             echo "3" > /home/centos/zookeeper/tmp/myid 
             chown centos:centos /home/centos/zookeeper/tmp/myid
             chmod 777 /home/centos/zookeeper/tmp/myid
+            EOF
             sudo -i -u centos bash << EOF
             source ~/.bashrc
             /home/centos/zookeeper/bin/zkServer.sh start
