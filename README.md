@@ -1,10 +1,15 @@
 # hadoop-install 설치확인
 
 ## hadoop 설치 및 클러스터 확인
-
+### version 3.x
 admin http://hmaster:9870
 
 yarn http://hmaster:8088
+
+### version 2.7.9
+admin http://hmaster:50070
+yarn  http://hmaster:8088
+
 
 ##  spark 설치 확인
 web ui http://hmaster:8089/
